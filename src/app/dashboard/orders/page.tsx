@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -19,7 +19,7 @@ const statusColor = (s: string) => {
 };
 
 export default async function OrdersPage() {
-  const supabase = createClient();
+  const supabase = createServiceClient();
 
   const { data: orders } = await supabase
     .from('cart_orders')

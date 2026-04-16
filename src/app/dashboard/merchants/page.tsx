@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 import { AddMerchantForm } from '@/components/dashboard/AddMerchantForm';
 
 export default async function MerchantsPage() {
-  const supabase = createClient();
+  const supabase = createServiceClient();
 
   const { data: merchants } = await supabase
     .from('merchants')

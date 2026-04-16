@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 import { MerchantDetail } from '@/components/dashboard/MerchantDetail';
 
 export default async function MerchantPage({
@@ -7,7 +7,7 @@ export default async function MerchantPage({
 }: {
   params: { mid: string };
 }) {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { mid } = params;
 
   // Fetch merchant
