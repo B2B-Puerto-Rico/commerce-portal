@@ -25,6 +25,18 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  // If there's an auth code in the URL, exchange it for a session first
+  const code = request.nextUrl.searchParams.get('code');
+  if (code) {
+    await supabase.auth.exchangeCodeForSession(code);
+
+    // Redirect to dashboard (strip the code from URL)
+    const url = request.nextUrl.clone();
+    url.pathname = '/dashboard/merchants';
+    url.searchParams.delete('code');
+    return NextResponse.redirect(url);
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -48,7 +60,7 @@ export async function middleware(request: NextRequest) {
   // Redirect authenticated users away from login
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    url.pathname = '/dashboard/merchants';
     return NextResponse.redirect(url);
   }
 
