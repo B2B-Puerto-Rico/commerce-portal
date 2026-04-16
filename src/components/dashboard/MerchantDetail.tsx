@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -29,7 +30,44 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
   const [connectMsg, setConnectMsg] = useState('');
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
+  const [cartEnabled, setCartEnabled] = useState(merchant.cart_enabled as boolean);
+  const [toggling, setToggling] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const router = useRouter();
   const m = merchant;
+
+  const handleToggleCart = async () => {
+    setToggling(true);
+    const newVal = !cartEnabled;
+    const res = await fetch('/api/merchants/toggle-cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mid: m.mid, cart_enabled: newVal }),
+    });
+    if (res.ok) {
+      setCartEnabled(newVal);
+    }
+    setToggling(false);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Delete ${m.business_name}? This removes ALL products, orders, and sync data. This cannot be undone.`)) {
+      return;
+    }
+    setDeleting(true);
+    const res = await fetch('/api/merchants/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mid: m.mid }),
+    });
+    if (res.ok) {
+      router.push('/dashboard/merchants');
+      router.refresh();
+    } else {
+      setDeleting(false);
+      alert('Failed to delete merchant');
+    }
+  };
 
   const handleConnect = async () => {
     setConnecting(true);
@@ -113,18 +151,29 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
         <Link href="/dashboard/merchants" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
           &larr; All merchants
         </Link>
-        <div className="flex items-center gap-3 mt-2">
-          <h1 className="text-2xl font-bold text-gray-900">{m.business_name as string}</h1>
-          <span
-            className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${
-              m.cart_enabled
-                ? 'bg-green-50 text-green-700'
-                : 'bg-gray-100 text-gray-500'
-            }`}
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">{m.business_name as string}</h1>
+            <button
+              onClick={handleToggleCart}
+              disabled={toggling}
+              className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full cursor-pointer transition-colors ${
+                cartEnabled
+                  ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${cartEnabled ? 'bg-green-500' : 'bg-gray-300'}`} />
+              {toggling ? 'Updating...' : cartEnabled ? 'Cart Enabled' : 'Cart Disabled'}
+            </button>
+          </div>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50"
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${m.cart_enabled ? 'bg-green-500' : 'bg-gray-300'}`} />
-            Cart {m.cart_enabled ? 'enabled' : 'disabled'}
-          </span>
+            {deleting ? 'Deleting...' : 'Delete Merchant'}
+          </button>
         </div>
         <p className="text-xs text-gray-400 font-mono mt-1">{m.mid as string}</p>
       </div>
@@ -437,9 +486,19 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             <div className="space-y-3">
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-gray-700">Cart enabled</span>
-                <span className={`text-sm font-medium ${m.cart_enabled ? 'text-green-600' : 'text-gray-400'}`}>
-                  {m.cart_enabled ? 'Yes' : 'No'}
-                </span>
+                <button
+                  onClick={handleToggleCart}
+                  disabled={toggling}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    cartEnabled ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      cartEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
               </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-sm text-gray-700">Tier</span>
