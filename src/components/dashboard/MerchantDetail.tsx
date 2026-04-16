@@ -33,6 +33,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
   const [cartEnabled, setCartEnabled] = useState(merchant.cart_enabled as boolean);
   const [toggling, setToggling] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
   const m = merchant;
 
@@ -525,9 +526,164 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             </div>
           </div>
 
-          <p className="text-xs text-gray-400">
-            Settings editing coming soon. For now, update directly in Supabase Dashboard.
-          </p>
+          {/* ============================================================= */}
+          {/* EMBED CODE — the money maker */}
+          {/* ============================================================= */}
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <div className="flex items-center gap-2 mb-1">
+              <svg className="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+              <h3 className="font-semibold text-sm text-gray-900">Embed Code</h3>
+            </div>
+            <p className="text-xs text-gray-400 mb-4">
+              Copy this one line and paste it into any website. Works on WordPress, Shopify, Squarespace, Wix, plain HTML — anywhere.
+            </p>
+
+            {/* The embed code */}
+            <div className="relative group">
+              <pre className="bg-gray-950 text-green-400 rounded-lg p-4 text-xs font-mono overflow-x-auto leading-relaxed">
+                {`<script src="https://commerce-cart-prod.b2bweb.app/v1/cart.js?mid=${m.mid}" async></script>`}
+              </pre>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `<script src="https://commerce-cart-prod.b2bweb.app/v1/cart.js?mid=${m.mid}" async></script>`
+                  );
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="absolute top-2 right-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5"
+              >
+                {copied ? (
+                  <>
+                    <svg className="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Preview link */}
+            <div className="mt-3 flex items-center gap-3">
+              <a
+                href={`https://commerce-cart-prod.b2bweb.app/widget?mid=${m.mid}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Preview cart widget
+              </a>
+              <span className="text-gray-200">|</span>
+              <a
+                href={m.site_url as string || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+              >
+                Visit merchant site
+              </a>
+            </div>
+          </div>
+
+          {/* Platform-specific instructions */}
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <h3 className="font-semibold text-sm text-gray-900 mb-3">Installation guides</h3>
+            <div className="space-y-3">
+              <details className="group">
+                <summary className="flex items-center justify-between cursor-pointer text-sm text-gray-700 hover:text-gray-900 py-1">
+                  <span className="flex items-center gap-2">
+                    <span className="text-base">🌐</span> HTML / Any Website
+                  </span>
+                  <svg className="w-4 h-4 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="mt-2 pl-7 text-xs text-gray-500 space-y-1">
+                  <p>Paste the embed code just before the closing <code className="bg-gray-100 px-1 rounded">&lt;/body&gt;</code> tag in your HTML file.</p>
+                  <p>The cart button will appear automatically in the bottom-right corner.</p>
+                </div>
+              </details>
+
+              <details className="group">
+                <summary className="flex items-center justify-between cursor-pointer text-sm text-gray-700 hover:text-gray-900 py-1">
+                  <span className="flex items-center gap-2">
+                    <span className="text-base">📝</span> WordPress
+                  </span>
+                  <svg className="w-4 h-4 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="mt-2 pl-7 text-xs text-gray-500 space-y-1">
+                  <p><strong>Option 1:</strong> Install the &quot;Insert Headers and Footers&quot; plugin, then paste the embed code in the Footer section.</p>
+                  <p><strong>Option 2:</strong> Go to Appearance → Theme Editor → footer.php, paste the code before <code className="bg-gray-100 px-1 rounded">&lt;/body&gt;</code>.</p>
+                </div>
+              </details>
+
+              <details className="group">
+                <summary className="flex items-center justify-between cursor-pointer text-sm text-gray-700 hover:text-gray-900 py-1">
+                  <span className="flex items-center gap-2">
+                    <span className="text-base">🛍️</span> Shopify
+                  </span>
+                  <svg className="w-4 h-4 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="mt-2 pl-7 text-xs text-gray-500 space-y-1">
+                  <p>Go to Online Store → Themes → Edit code → <code className="bg-gray-100 px-1 rounded">theme.liquid</code></p>
+                  <p>Paste the embed code just before <code className="bg-gray-100 px-1 rounded">&lt;/body&gt;</code>.</p>
+                </div>
+              </details>
+
+              <details className="group">
+                <summary className="flex items-center justify-between cursor-pointer text-sm text-gray-700 hover:text-gray-900 py-1">
+                  <span className="flex items-center gap-2">
+                    <span className="text-base">◼️</span> Squarespace / Wix
+                  </span>
+                  <svg className="w-4 h-4 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="mt-2 pl-7 text-xs text-gray-500 space-y-1">
+                  <p><strong>Squarespace:</strong> Settings → Advanced → Code Injection → Footer, paste the embed code.</p>
+                  <p><strong>Wix:</strong> Settings → Custom Code → Add Code → Body End, paste the embed code.</p>
+                </div>
+              </details>
+
+              <details className="group">
+                <summary className="flex items-center justify-between cursor-pointer text-sm text-gray-700 hover:text-gray-900 py-1">
+                  <span className="flex items-center gap-2">
+                    <span className="text-base">⚛️</span> Next.js / React
+                  </span>
+                  <svg className="w-4 h-4 text-gray-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                <div className="mt-2 pl-7 text-xs text-gray-500 space-y-2">
+                  <p>Add to your root layout or any page using Next.js Script component:</p>
+                  <pre className="bg-gray-50 rounded p-2 text-[11px] overflow-x-auto">{`import Script from 'next/script'
+
+<Script
+  src="https://commerce-cart-prod.b2bweb.app/v1/cart.js?mid=${m.mid}"
+  strategy="lazyOnload"
+/>`}</pre>
+                </div>
+              </details>
+            </div>
+          </div>
         </div>
       )}
     </div>
