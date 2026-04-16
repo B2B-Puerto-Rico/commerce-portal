@@ -25,43 +25,27 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // If there's an auth code in the URL, exchange it for a session first
-  const code = request.nextUrl.searchParams.get('code');
-  if (code) {
-    await supabase.auth.exchangeCodeForSession(code);
-
-    // Redirect to dashboard (strip the code from URL)
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard/merchants';
-    url.searchParams.delete('code');
-    return NextResponse.redirect(url);
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login');
-  const isApiRoute = request.nextUrl.pathname.startsWith('/api');
-  const isCallbackRoute = request.nextUrl.pathname.startsWith('/auth');
+  const pathname = request.nextUrl.pathname;
+  const isLoginPage = pathname === '/login';
+  const isApiRoute = pathname.startsWith('/api');
 
-  // Allow API routes and auth callback through
-  if (isApiRoute || isCallbackRoute) {
+  // Allow API routes through
+  if (isApiRoute) {
     return supabaseResponse;
   }
 
-  // Redirect unauthenticated users to login
-  if (!user && !isAuthPage) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+  // Not logged in → go to login
+  if (!user && !isLoginPage) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Redirect authenticated users away from login
-  if (user && isAuthPage) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard/merchants';
-    return NextResponse.redirect(url);
+  // Logged in on login page → go to dashboard
+  if (user && isLoginPage) {
+    return NextResponse.redirect(new URL('/dashboard/merchants', request.url));
   }
 
   return supabaseResponse;
