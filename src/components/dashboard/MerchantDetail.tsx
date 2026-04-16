@@ -19,14 +19,69 @@ interface Props {
   categories: Record<string, unknown>[];
 }
 
-type Tab = 'overview' | 'products' | 'orders' | 'sync' | 'settings';
+type Tab = 'overview' | 'connect' | 'products' | 'orders' | 'sync' | 'settings';
 
 export function MerchantDetail({ merchant, products, orders, syncRuns, categories }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
+  const [accessToken, setAccessToken] = useState('');
+  const [ecommerceSk, setEcommerceSk] = useState('');
+  const [connecting, setConnecting] = useState(false);
+  const [connectMsg, setConnectMsg] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState('');
   const m = merchant;
+
+  const handleConnect = async () => {
+    setConnecting(true);
+    setConnectMsg('');
+    try {
+      const res = await fetch('/api/merchants/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mid: m.mid,
+          access_token: accessToken,
+          ecommerce_sk: ecommerceSk || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setConnectMsg('Clover connected successfully! Go to the Overview tab and click Sync Now.');
+        setAccessToken('');
+        setEcommerceSk('');
+      } else {
+        setConnectMsg(`Error: ${data.error}`);
+      }
+    } catch {
+      setConnectMsg('Network error. Please try again.');
+    }
+    setConnecting(false);
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncMsg('Syncing... this may take a minute for large menus.');
+    try {
+      const res = await fetch('/api/merchants/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mid: m.mid }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSyncMsg(`Sync complete! ${data.items_synced} items synced (${data.status}). Refresh the page to see products.`);
+      } else {
+        setSyncMsg(`Sync failed: ${data.error}`);
+      }
+    } catch {
+      setSyncMsg('Network error during sync.');
+    }
+    setSyncing(false);
+  };
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: 'overview', label: 'Overview' },
+    { id: 'connect', label: 'Connect Clover' },
     { id: 'products', label: 'Products', count: products.length },
     { id: 'orders', label: 'Orders', count: orders.length },
     { id: 'sync', label: 'Sync History', count: syncRuns.length },
@@ -160,6 +215,93 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                 <p className="font-medium text-gray-700 mt-0.5">{categories.length}</p>
               </div>
             </div>
+          {/* Sync Now button */}
+          <div className="md:col-span-3">
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+            >
+              {syncing ? 'Syncing...' : 'Sync Now'}
+            </button>
+            {syncMsg && (
+              <p className={`mt-2 text-sm ${syncMsg.includes('complete') ? 'text-green-600' : syncMsg.includes('fail') ? 'text-red-600' : 'text-blue-600'}`}>
+                {syncMsg}
+              </p>
+            )}
+          </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================================================================= */}
+      {/* Connect Clover tab */}
+      {/* ================================================================= */}
+      {tab === 'connect' && (
+        <div className="max-w-lg space-y-6">
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <h3 className="font-semibold text-sm text-gray-900 mb-1">Connect Clover Account</h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Paste the Clover API credentials for this merchant. Tokens are encrypted at rest using Supabase Vault.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Access Token <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={accessToken}
+                  onChange={(e) => setAccessToken(e.target.value)}
+                  placeholder="Paste Clover access token"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  From Clover Developer Dashboard → Your App → API Tokens
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ecommerce Private Key (optional)
+                </label>
+                <input
+                  type="password"
+                  value={ecommerceSk}
+                  onChange={(e) => setEcommerceSk(e.target.value)}
+                  placeholder="sk_... (for Hosted Checkout)"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Only needed for payment processing. Can add later.
+                </p>
+              </div>
+
+              {connectMsg && (
+                <p className={`text-sm p-3 rounded-lg ${connectMsg.includes('success') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                  {connectMsg}
+                </p>
+              )}
+
+              <button
+                onClick={handleConnect}
+                disabled={connecting || !accessToken}
+                className="w-full bg-gray-900 text-white py-3 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+              >
+                {connecting ? 'Connecting...' : 'Save & Connect'}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 rounded-xl p-4">
+            <h4 className="font-semibold text-sm text-blue-900">How to get your Clover API token:</h4>
+            <ol className="mt-2 text-xs text-blue-800 space-y-1 list-decimal ml-4">
+              <li>Go to the Clover Developer Dashboard</li>
+              <li>Select your app → API Tokens</li>
+              <li>Create a test API token for this merchant</li>
+              <li>Copy and paste it above</li>
+            </ol>
           </div>
         </div>
       )}

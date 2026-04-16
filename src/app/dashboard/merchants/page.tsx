@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { AddMerchantForm } from '@/components/dashboard/AddMerchantForm';
 
 export default async function MerchantsPage() {
   const supabase = createClient();
@@ -30,6 +31,7 @@ export default async function MerchantsPage() {
             {merchants?.length || 0} merchant{(merchants?.length || 0) !== 1 ? 's' : ''} connected
           </p>
         </div>
+        <AddMerchantForm />
       </div>
 
       {/* Table */}
