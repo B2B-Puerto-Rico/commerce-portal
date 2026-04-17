@@ -207,12 +207,12 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-gray-100 -mx-6 px-6">
+      <div className="flex gap-1 mb-6 border-b border-gray-100 -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto scrollbar-hide">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
+            className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${
               tab === t.id
                 ? 'border-gray-900 text-gray-900'
                 : 'border-transparent text-gray-400 hover:text-gray-600'
