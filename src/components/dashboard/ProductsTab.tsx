@@ -46,6 +46,8 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
   const [editShowOnPOS, setEditShowOnPOS] = useState(true);
   const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showAiPicker, setShowAiPicker] = useState(false);
+  const [generatingModel, setGeneratingModel] = useState<string | null>(null);
 
   // Create form state
   const [newName, setNewName] = useState('');
@@ -327,26 +329,7 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                         <p className="text-[10px] text-gray-300 mt-1">JPEG, PNG, WebP up to 5MB</p>
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!editing) return;
-                            const model = prompt('Choose AI model:\n1. flux (best quality)\n2. sdxl (fast)\n3. playground (creative)\n\nType model name:', 'flux');
-                            if (!model) return;
-                            setUploading(true);
-                            fetch('/api/merchants/generate-image', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ mid, clover_item_id: editing.clover_item_id, product_name: editing.name, model }),
-                            }).then(r => r.json()).then(data => {
-                              if (data.image_url) {
-                                setEditImageUrl(data.image_url);
-                                setProducts(products.map(p => p.clover_item_id === editing.clover_item_id ? { ...p, image_url: data.image_url } : p));
-                              } else {
-                                alert(data.error || 'Generation failed');
-                              }
-                              setUploading(false);
-                            }).catch(() => setUploading(false));
-                          }}
+                          onClick={(e) => { e.stopPropagation(); setShowAiPicker(true); }}
                           className="mt-2 text-[11px] font-semibold text-purple-600 hover:text-purple-800 flex items-center gap-1 mx-auto"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -479,6 +462,99 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                   className="px-4 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-100 transition-colors">
                   Cancel
                 </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+      {/* AI Model Picker Modal */}
+      {showAiPicker && editing && (
+        <>
+          <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm" onClick={() => !generatingModel && setShowAiPicker(false)} />
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto">
+              <div className="p-5 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900">Generate Image with AI</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      for &ldquo;{editing.name}&rdquo;
+                    </p>
+                  </div>
+                  <button onClick={() => !generatingModel && setShowAiPicker(false)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-5 grid grid-cols-2 gap-3">
+                {[
+                  { id: 'imagen-4-ultra', name: 'Imagen 4 Ultra', by: 'Google', price: '$0.06/image', desc: 'Ultra quality, best for food', color: 'from-blue-600 to-blue-800' },
+                  { id: 'seedream-4.5', name: 'Seedream 4.5', by: 'ByteDance', price: '$0.03/image', desc: 'Great spatial understanding', color: 'from-emerald-600 to-emerald-800' },
+                  { id: 'flux-2-pro', name: 'Flux 2 Pro', by: 'Black Forest Labs', price: '$0.05/image', desc: 'High-quality with editing support', color: 'from-orange-600 to-red-700' },
+                  { id: 'flux-2-flex', name: 'Flux 2 Flex', by: 'Black Forest Labs', price: '$0.013/image', desc: 'Max quality, 10 reference images', color: 'from-purple-600 to-purple-800' },
+                  { id: 'flux-2-max', name: 'Flux 2 Max', by: 'Black Forest Labs', price: '$0.07/image', desc: 'Highest fidelity from BFL', color: 'from-gray-800 to-gray-900' },
+                  { id: 'nano-banana-2', name: 'Nano Banana 2', by: 'Google', price: '$0.02/image', desc: 'Fast multi-image generation', color: 'from-yellow-500 to-orange-600' },
+                ].map((model) => (
+                  <button
+                    key={model.id}
+                    disabled={!!generatingModel}
+                    onClick={async () => {
+                      setGeneratingModel(model.id);
+                      try {
+                        const res = await fetch('/api/merchants/generate-image', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ mid, clover_item_id: editing.clover_item_id, product_name: editing.name, model: model.id }),
+                        });
+                        const data = await res.json();
+                        if (data.image_url) {
+                          setEditImageUrl(data.image_url);
+                          setProducts(products.map(p => p.clover_item_id === editing.clover_item_id ? { ...p, image_url: data.image_url } : p));
+                          setShowAiPicker(false);
+                        } else {
+                          alert(data.error || 'Generation failed');
+                        }
+                      } catch {
+                        alert('Failed to generate image');
+                      }
+                      setGeneratingModel(null);
+                    }}
+                    className={`relative text-left rounded-xl overflow-hidden border border-gray-100 hover:border-gray-300 transition-all ${
+                      generatingModel === model.id ? 'ring-2 ring-purple-500' : ''
+                    } ${generatingModel && generatingModel !== model.id ? 'opacity-40' : ''}`}
+                  >
+                    {/* Gradient header */}
+                    <div className={`h-16 bg-gradient-to-br ${model.color} flex items-end p-3`}>
+                      <span className="text-white text-[10px] font-bold bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                        {model.price}
+                      </span>
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-3">
+                      <p className="text-xs text-gray-400">{model.by}</p>
+                      <p className="font-bold text-sm text-gray-900 mt-0.5">{model.name}</p>
+                      <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">{model.desc}</p>
+                    </div>
+
+                    {/* Loading state */}
+                    {generatingModel === model.id && (
+                      <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-600 border-t-transparent" />
+                        <span className="text-xs font-semibold text-purple-600">Generating...</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <div className="px-5 pb-4">
+                <p className="text-[10px] text-gray-400 text-center">
+                  Powered by Replicate. Images are AI-generated professional food photography.
+                </p>
               </div>
             </div>
           </div>

@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 
-const MODELS = {
-  flux: 'black-forest-labs/flux-1.1-pro',
-  sdxl: 'stability-ai/sdxl',
-  playground: 'playgroundai/playground-v2.5-1024px-aesthetic',
+const MODELS: Record<string, string> = {
+  'imagen-4-ultra': 'google/imagen-4-ultra',
+  'seedream-4.5': 'bytedance/seedream-4.5',
+  'flux-2-pro': 'black-forest-labs/flux-2-pro',
+  'flux-2-flex': 'black-forest-labs/flux-2-flex',
+  'flux-2-max': 'black-forest-labs/flux-2-max',
+  'nano-banana-2': 'google/nano-banana-2',
 };
 
 export async function POST(request: Request) {
@@ -20,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Replicate not configured' }, { status: 500 });
   }
 
-  const modelId = MODELS[model as keyof typeof MODELS] || MODELS.flux;
+  const modelId = MODELS[model] || MODELS['flux-2-pro'];
 
   // Professional food photography prompt
   const prompt = `Professional food photography of ${product_name}, appetizing presentation on a clean plate, restaurant quality, soft natural lighting, shallow depth of field, top-down angle, warm tones, high resolution, commercial food photography style, no text, no watermark`;
