@@ -325,6 +325,35 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                         </svg>
                         <p className="text-xs text-gray-400">Click or drag an image here</p>
                         <p className="text-[10px] text-gray-300 mt-1">JPEG, PNG, WebP up to 5MB</p>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!editing) return;
+                            const model = prompt('Choose AI model:\n1. flux (best quality)\n2. sdxl (fast)\n3. playground (creative)\n\nType model name:', 'flux');
+                            if (!model) return;
+                            setUploading(true);
+                            fetch('/api/merchants/generate-image', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ mid, clover_item_id: editing.clover_item_id, product_name: editing.name, model }),
+                            }).then(r => r.json()).then(data => {
+                              if (data.image_url) {
+                                setEditImageUrl(data.image_url);
+                                setProducts(products.map(p => p.clover_item_id === editing.clover_item_id ? { ...p, image_url: data.image_url } : p));
+                              } else {
+                                alert(data.error || 'Generation failed');
+                              }
+                              setUploading(false);
+                            }).catch(() => setUploading(false));
+                          }}
+                          className="mt-2 text-[11px] font-semibold text-purple-600 hover:text-purple-800 flex items-center gap-1 mx-auto"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Generate with AI
+                        </button>
                       </>
                     )}
                   </div>
