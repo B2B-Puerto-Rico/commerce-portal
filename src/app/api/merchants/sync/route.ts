@@ -286,10 +286,18 @@ export async function POST(request: Request) {
           if (slots.length === 0) {
             return { day: day.toUpperCase(), open: -1, close: -1, closed: true };
           }
+          // Clover uses HHMM format: 900 = 9:00 AM, 1700 = 5:00 PM
+          // Convert to minutes from midnight for easy comparison
+          const startHHMM = slots[0].start;
+          const endHHMM = slots[0].end;
+          const openMins = Math.floor(startHHMM / 100) * 60 + (startHHMM % 100);
+          const closeMins = Math.floor(endHHMM / 100) * 60 + (endHHMM % 100);
           return {
             day: day.toUpperCase(),
-            open: slots[0].start, // minutes from midnight
-            close: slots[0].end,
+            open: openMins,
+            close: closeMins,
+            openDisplay: startHHMM, // keep original for display
+            closeDisplay: endHHMM,
             closed: false,
           };
         });
