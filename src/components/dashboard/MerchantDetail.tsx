@@ -390,7 +390,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
         <ProductsTab
           mid={m.mid as string}
           tier={m.cart_tier as string}
-          products={products as unknown as { clover_item_id: string; name: string; price_cents: number; description: string | null; sku: string | null; in_stock: boolean; hidden_online: boolean; hidden_in_clover: boolean; last_synced_at: string | null }[]}
+          products={products as unknown as { clover_item_id: string; name: string; price_cents: number; description: string | null; image_url: string | null; sku: string | null; in_stock: boolean; hidden_online: boolean; hidden_in_clover: boolean; last_synced_at: string | null }[]}
           categories={categories as unknown as { clover_category_id: string; name: string }[]}
         />
       )}

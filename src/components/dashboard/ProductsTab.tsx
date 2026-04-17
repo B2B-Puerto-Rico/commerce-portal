@@ -11,6 +11,7 @@ interface Product {
   name: string;
   price_cents: number;
   description: string | null;
+  image_url: string | null;
   sku: string | null;
   in_stock: boolean;
   hidden_online: boolean;
@@ -43,6 +44,8 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
   const [editStock, setEditStock] = useState(true);
   const [editHidden, setEditHidden] = useState(false);
   const [editShowOnPOS, setEditShowOnPOS] = useState(true);
+  const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // Create form state
   const [newName, setNewName] = useState('');
@@ -61,6 +64,35 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
     setEditStock(p.in_stock);
     setEditHidden(p.hidden_online);
     setEditShowOnPOS(!p.hidden_in_clover);
+    setEditImageUrl(p.image_url);
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!editing) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('mid', mid);
+    formData.append('clover_item_id', editing.clover_item_id);
+
+    const res = await fetch('/api/merchants/products/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setEditImageUrl(data.image_url);
+      setProducts(products.map((p) =>
+        p.clover_item_id === editing.clover_item_id
+          ? { ...p, image_url: data.image_url }
+          : p
+      ));
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Upload failed');
+    }
+    setUploading(false);
   };
 
   const handleSaveEdit = async () => {
@@ -136,6 +168,7 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
         name: newName,
         price_cents: priceCents,
         description: newDesc || null,
+        image_url: null,
         sku: null,
         in_stock: true,
         hidden_online: false,
@@ -194,8 +227,21 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
             {products.map((p) => (
               <tr key={p.clover_item_id} className="hover:bg-gray-50/50">
                 <td className="px-5 py-3">
-                  <span className="font-medium text-sm text-gray-900">{p.name}</span>
-                  {p.description ? <span className="block text-xs text-gray-400 mt-0.5 truncate max-w-xs">{p.description}</span> : null}
+                  <div className="flex items-center gap-3">
+                    {p.image_url ? (
+                      <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <span className="font-medium text-sm text-gray-900">{p.name}</span>
+                      {p.description ? <span className="block text-xs text-gray-400 mt-0.5 truncate max-w-xs">{p.description}</span> : null}
+                    </div>
+                  </div>
                 </td>
                 <td className="px-5 py-3 text-sm font-medium text-gray-700">{formatPrice(p.price_cents)}</td>
                 <td className="px-5 py-3">
@@ -242,6 +288,59 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                 <button onClick={() => setEditing(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
               </div>
               <p className="text-xs text-gray-400">Changes sync to Clover POS in real-time.</p>
+
+              {/* Image upload */}
+              <div
+                className="relative border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-gray-400 transition-colors cursor-pointer"
+                onClick={() => document.getElementById('product-image-input')?.click()}
+                onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-blue-400', 'bg-blue-50/50'); }}
+                onDragLeave={(e) => { e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50'); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50');
+                  const file = e.dataTransfer.files[0];
+                  if (file) handleImageUpload(file);
+                }}
+              >
+                {editImageUrl ? (
+                  <div className="relative">
+                    <img src={editImageUrl} alt="" className="w-full h-40 object-cover" />
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center">
+                      <span className="text-white font-medium text-sm opacity-0 hover:opacity-100 transition-opacity">
+                        Click or drag to replace
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-8 text-center">
+                    {uploading ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-900 border-t-transparent" />
+                        <span className="text-xs text-gray-500">Uploading...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <svg className="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-xs text-gray-400">Click or drag an image here</p>
+                        <p className="text-[10px] text-gray-300 mt-1">JPEG, PNG, WebP up to 5MB</p>
+                      </>
+                    )}
+                  </div>
+                )}
+                <input
+                  id="product-image-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file);
+                    e.target.value = '';
+                  }}
+                />
+              </div>
 
               <div className="space-y-3">
                 <div>
