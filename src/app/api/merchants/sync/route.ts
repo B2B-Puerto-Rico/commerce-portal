@@ -221,10 +221,39 @@ export async function POST(request: Request) {
       errors.push({ step: 'items', message: e instanceof Error ? e.message : String(e) });
     }
 
-    // Update merchant last_full_sync_at
+    // Fetch business hours from Clover
+    let businessHours = null;
+    try {
+      const hoursData = await cloverGet('/opening_hours');
+      if (hoursData && hoursData.elements) {
+        businessHours = hoursData.elements.map((h: { day: string; open: number; close: number }) => ({
+          day: h.day,
+          open: h.open, // minutes from midnight
+          close: h.close, // minutes from midnight
+        }));
+      }
+    } catch {
+      // Non-fatal — hours not available for all merchants
+    }
+
+    // Update merchant — save hours in theme + last_full_sync_at
+    const { data: currentMerchant } = await supabase
+      .from('merchants')
+      .select('theme')
+      .eq('mid', mid)
+      .single();
+
+    const updatedTheme = { ...((currentMerchant?.theme as Record<string, unknown>) || {}) };
+    if (businessHours) {
+      updatedTheme.businessHours = businessHours;
+    }
+
     await supabase
       .from('merchants')
-      .update({ last_full_sync_at: new Date().toISOString() })
+      .update({
+        last_full_sync_at: new Date().toISOString(),
+        theme: updatedTheme,
+      })
       .eq('mid', mid);
 
     // Finalize sync run
