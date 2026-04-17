@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { PromoCodesManager } from './PromoCodesManager';
 
 interface Props {
   mid: string;
@@ -206,6 +207,9 @@ export function SettingsTab({
           </span>
         )}
       </div>
+
+      {/* Promo Codes */}
+      <PromoCodesManager mid={mid} />
 
       {/* Deploy to Merchant Site */}
       {githubRepo && (
