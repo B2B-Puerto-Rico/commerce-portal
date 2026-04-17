@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SettingsTab } from './SettingsTab';
+import { ProductsTab } from './ProductsTab';
 
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -382,43 +383,12 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       {/* Products tab */}
       {/* ================================================================= */}
       {tab === 'products' && (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50">
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Product</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Price</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Stock</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Visible</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Last Synced</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {products.map((p) => (
-                <tr key={p.clover_item_id as string} className="hover:bg-gray-50/50">
-                  <td className="px-5 py-3">
-                    <span className="font-medium text-sm text-gray-900">{p.name as string}</span>
-                    {p.sku ? <span className="block text-xs text-gray-400 mt-0.5">SKU: {p.sku as string}</span> : null}
-                  </td>
-                  <td className="px-5 py-3 text-sm font-medium text-gray-700">{formatPrice(p.price_cents as number)}</td>
-                  <td className="px-5 py-3">
-                    <span className={`text-xs font-medium ${p.in_stock ? 'text-green-600' : 'text-red-500'}`}>
-                      {p.in_stock ? (p.stock_count != null ? `${p.stock_count} left` : 'In stock') : 'Out of stock'}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3">
-                    <span className={`text-xs ${!(p.hidden_online as boolean) && !(p.hidden_in_clover as boolean) ? 'text-green-600' : 'text-gray-400'}`}>
-                      {!(p.hidden_online as boolean) && !(p.hidden_in_clover as boolean) ? 'Yes' : 'Hidden'}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-xs text-gray-400">
-                    {p.last_synced_at ? new Date(p.last_synced_at as string).toLocaleString() : '-'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ProductsTab
+          mid={m.mid as string}
+          tier={m.cart_tier as string}
+          products={products as unknown as { clover_item_id: string; name: string; price_cents: number; description: string | null; sku: string | null; in_stock: boolean; hidden_online: boolean; hidden_in_clover: boolean; last_synced_at: string | null }[]}
+          categories={categories as unknown as { clover_category_id: string; name: string }[]}
+        />
       )}
 
       {/* ================================================================= */}

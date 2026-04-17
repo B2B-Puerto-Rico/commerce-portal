@@ -1,0 +1,325 @@
+'use client';
+
+import { useState } from 'react';
+
+function formatPrice(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+interface Product {
+  clover_item_id: string;
+  name: string;
+  price_cents: number;
+  description: string | null;
+  sku: string | null;
+  in_stock: boolean;
+  hidden_online: boolean;
+  hidden_in_clover: boolean;
+  last_synced_at: string | null;
+}
+
+interface Category {
+  clover_category_id: string;
+  name: string;
+}
+
+interface Props {
+  mid: string;
+  tier: string;
+  products: Product[];
+  categories: Category[];
+}
+
+export function ProductsTab({ mid, tier, products: initialProducts, categories }: Props) {
+  const [products, setProducts] = useState(initialProducts);
+  const [editing, setEditing] = useState<Product | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Edit form state
+  const [editName, setEditName] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editStock, setEditStock] = useState(true);
+  const [editHidden, setEditHidden] = useState(false);
+
+  // Create form state
+  const [newName, setNewName] = useState('');
+  const [newPrice, setNewPrice] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+  const [newCategory, setNewCategory] = useState('');
+
+  const canEdit = tier === 'pro' || tier === 'premium';
+  const canCreate = tier === 'premium';
+
+  const openEdit = (p: Product) => {
+    setEditing(p);
+    setEditName(p.name);
+    setEditPrice((p.price_cents / 100).toFixed(2));
+    setEditDesc(p.description || '');
+    setEditStock(p.in_stock);
+    setEditHidden(p.hidden_online);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editing) return;
+    setSaving(true);
+    const priceCents = Math.round(parseFloat(editPrice) * 100);
+
+    const res = await fetch('/api/merchants/products/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mid,
+        clover_item_id: editing.clover_item_id,
+        name: editName,
+        price_cents: priceCents,
+        description: editDesc,
+        in_stock: editStock,
+        hidden_online: editHidden,
+      }),
+    });
+
+    if (res.ok) {
+      setProducts(products.map((p) =>
+        p.clover_item_id === editing.clover_item_id
+          ? { ...p, name: editName, price_cents: priceCents, description: editDesc, in_stock: editStock, hidden_online: editHidden }
+          : p
+      ));
+      setEditing(null);
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to save');
+    }
+    setSaving(false);
+  };
+
+  const handleCreate = async () => {
+    if (!newName || !newPrice) return;
+    setSaving(true);
+    const priceCents = Math.round(parseFloat(newPrice) * 100);
+
+    const res = await fetch('/api/merchants/products/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mid,
+        name: newName,
+        price_cents: priceCents,
+        description: newDesc || null,
+        category_id: newCategory || null,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setProducts([...products, {
+        clover_item_id: data.clover_item_id,
+        name: newName,
+        price_cents: priceCents,
+        description: newDesc || null,
+        sku: null,
+        in_stock: true,
+        hidden_online: false,
+        hidden_in_clover: false,
+        last_synced_at: new Date().toISOString(),
+      }]);
+      setCreating(false);
+      setNewName('');
+      setNewPrice('');
+      setNewDesc('');
+      setNewCategory('');
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to create');
+    }
+    setSaving(false);
+  };
+
+  return (
+    <div>
+      {/* Header with Add button */}
+      {canCreate && (
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={() => setCreating(true)}
+            className="bg-gray-900 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center gap-1.5"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Product
+          </button>
+        </div>
+      )}
+
+      {!canEdit && (
+        <div className="mb-4 bg-yellow-50 border border-yellow-100 rounded-xl p-3 text-xs text-yellow-700">
+          Upgrade to <strong>Pro</strong> to edit products or <strong>Premium</strong> to create new ones. Changes sync to your Clover POS in real-time.
+        </div>
+      )}
+
+      {/* Products table */}
+      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-50">
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Product</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Price</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Stock</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Visible</th>
+              {canEdit && <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Actions</th>}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {products.map((p) => (
+              <tr key={p.clover_item_id} className="hover:bg-gray-50/50">
+                <td className="px-5 py-3">
+                  <span className="font-medium text-sm text-gray-900">{p.name}</span>
+                  {p.description ? <span className="block text-xs text-gray-400 mt-0.5 truncate max-w-xs">{p.description}</span> : null}
+                </td>
+                <td className="px-5 py-3 text-sm font-medium text-gray-700">{formatPrice(p.price_cents)}</td>
+                <td className="px-5 py-3">
+                  <span className={`text-xs font-medium ${p.in_stock ? 'text-green-600' : 'text-red-500'}`}>
+                    {p.in_stock ? 'In stock' : 'Out of stock'}
+                  </span>
+                </td>
+                <td className="px-5 py-3">
+                  <span className={`text-xs ${!p.hidden_online && !p.hidden_in_clover ? 'text-green-600' : 'text-gray-400'}`}>
+                    {!p.hidden_online && !p.hidden_in_clover ? 'Yes' : 'Hidden'}
+                  </span>
+                </td>
+                {canEdit && (
+                  <td className="px-5 py-3 text-right">
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Edit modal */}
+      {editing && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setEditing(null)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg text-gray-900">Edit Product</h3>
+                <button onClick={() => setEditing(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+              </div>
+              <p className="text-xs text-gray-400">Changes sync to Clover POS in real-time.</p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Name</label>
+                  <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Price ($)</label>
+                  <input type="number" step="0.01" min="0" value={editPrice} onChange={(e) => setEditPrice(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
+                  <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={2}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700">In stock</span>
+                  <button onClick={() => setEditStock(!editStock)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${editStock ? 'bg-green-500' : 'bg-gray-300'}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editStock ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700">Hidden from cart</span>
+                  <button onClick={() => setEditHidden(!editHidden)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${editHidden ? 'bg-red-400' : 'bg-gray-300'}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editHidden ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button onClick={handleSaveEdit} disabled={saving}
+                  className="flex-1 bg-gray-900 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-300 active:scale-[0.98] transition-all">
+                  {saving ? 'Saving...' : 'Save & Sync to Clover'}
+                </button>
+                <button onClick={() => setEditing(null)}
+                  className="px-4 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Create modal */}
+      {creating && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setCreating(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg text-gray-900">New Product</h3>
+                <button onClick={() => setCreating(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+              </div>
+              <p className="text-xs text-gray-400">Creates the item in Clover POS and your online menu simultaneously.</p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Name *</label>
+                  <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Product name"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Price ($) *</label>
+                  <input type="number" step="0.01" min="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} placeholder="0.00"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
+                  <textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={2} placeholder="Optional description"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                </div>
+                {categories.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
+                    <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                      <option value="">No category</option>
+                      {categories.map((c) => (
+                        <option key={c.clover_category_id} value={c.clover_category_id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button onClick={handleCreate} disabled={saving || !newName || !newPrice}
+                  className="flex-1 bg-gray-900 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-300 active:scale-[0.98] transition-all">
+                  {saving ? 'Creating...' : 'Create & Push to Clover'}
+                </button>
+                <button onClick={() => setCreating(false)}
+                  className="px-4 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
