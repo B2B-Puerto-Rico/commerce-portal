@@ -94,7 +94,7 @@ export default async function MerchantOrdersPage() {
                 <td className="px-5 py-3">
                   {o.clover_order_id ? (
                     <a
-                      href={`${cloverBase}/merchants/${mid}/orders/${o.clover_order_id}`}
+                      href={`${cloverBase}/orders/m/${mid}/orders/${o.clover_order_id}/`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs font-mono font-semibold text-blue-600 hover:text-blue-800 hover:underline"

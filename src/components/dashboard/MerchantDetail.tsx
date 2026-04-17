@@ -501,7 +501,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   <td className="px-5 py-3">
                     {(o.clover_order_id as string) ? (
                       <a
-                        href={`${(m.environment as string) === 'sandbox' ? 'https://sandbox.dev.clover.com' : 'https://www.clover.com'}/merchants/${m.mid}/orders/${o.clover_order_id}`}
+                        href={`${(m.environment as string) === 'sandbox' ? 'https://sandbox.dev.clover.com' : 'https://www.clover.com'}/orders/m/${m.mid}/orders/${o.clover_order_id}/`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs font-mono font-semibold text-blue-600 hover:text-blue-800 hover:underline"

@@ -43,7 +43,7 @@ export default async function OrdersPage() {
   const cloverOrderUrl = (mid: string, cloverOrderId: string) => {
     const env = merchantMap.get(mid)?.env;
     const base = env === 'sandbox' ? 'https://sandbox.dev.clover.com' : 'https://www.clover.com';
-    return `${base}/merchants/${mid}/orders/${cloverOrderId}`;
+    return `${base}/orders/m/${mid}/orders/${cloverOrderId}/`;
   };
 
   // Stats
