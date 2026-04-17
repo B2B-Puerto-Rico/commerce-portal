@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SettingsTab } from './SettingsTab';
 import { ProductsTab } from './ProductsTab';
+import { MenuBuilder } from './MenuBuilder';
 
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -19,11 +20,13 @@ interface Props {
   orders: Record<string, unknown>[];
   syncRuns: Record<string, unknown>[];
   categories: Record<string, unknown>[];
+  modifierGroups: Record<string, unknown>[];
+  modifiers: Record<string, unknown>[];
 }
 
-type Tab = 'overview' | 'connect' | 'products' | 'orders' | 'sync' | 'settings';
+type Tab = 'overview' | 'connect' | 'products' | 'menu' | 'orders' | 'sync' | 'settings';
 
-export function MerchantDetail({ merchant, products, orders, syncRuns, categories }: Props) {
+export function MerchantDetail({ merchant, products, orders, syncRuns, categories, modifierGroups, modifiers }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
   const [accessToken, setAccessToken] = useState('');
   const [ecommerceSk, setEcommerceSk] = useState('');
@@ -145,6 +148,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
     { id: 'overview', label: 'Overview' },
     { id: 'connect', label: 'Connect Clover' },
     { id: 'products', label: 'Products', count: products.length },
+    { id: 'menu', label: 'Menu Builder' },
     { id: 'orders', label: 'Orders', count: orders.length },
     { id: 'sync', label: 'Sync History', count: syncRuns.length },
     { id: 'settings', label: 'Settings' },
@@ -388,6 +392,19 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
           tier={m.cart_tier as string}
           products={products as unknown as { clover_item_id: string; name: string; price_cents: number; description: string | null; sku: string | null; in_stock: boolean; hidden_online: boolean; hidden_in_clover: boolean; last_synced_at: string | null }[]}
           categories={categories as unknown as { clover_category_id: string; name: string }[]}
+        />
+      )}
+
+      {/* ================================================================= */}
+      {/* Menu Builder tab */}
+      {/* ================================================================= */}
+      {tab === 'menu' && (
+        <MenuBuilder
+          mid={m.mid as string}
+          tier={m.cart_tier as string}
+          categories={categories as unknown as { clover_category_id: string; name: string; sort_order: number }[]}
+          modifierGroups={modifierGroups as unknown as { clover_mg_id: string; name: string; min_required: number; max_allowed: number }[]}
+          modifiers={modifiers as unknown as { clover_modifier_id: string; clover_mg_id: string; name: string; price_cents: number; available: boolean }[]}
         />
       )}
 

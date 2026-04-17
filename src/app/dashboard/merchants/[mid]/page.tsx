@@ -51,6 +51,18 @@ export default async function MerchantPage({
     .eq('mid', mid)
     .order('sort_order', { ascending: true });
 
+  // Fetch modifier groups + modifiers
+  const { data: modifierGroups } = await supabase
+    .from('modifier_groups')
+    .select('*')
+    .eq('mid', mid)
+    .order('sort_order', { ascending: true });
+
+  const { data: modifiers } = await supabase
+    .from('modifiers')
+    .select('*')
+    .eq('mid', mid);
+
   return (
     <MerchantDetail
       merchant={merchant}
@@ -58,6 +70,8 @@ export default async function MerchantPage({
       orders={orders || []}
       syncRuns={syncRuns || []}
       categories={categories || []}
+      modifierGroups={modifierGroups || []}
+      modifiers={modifiers || []}
     />
   );
 }

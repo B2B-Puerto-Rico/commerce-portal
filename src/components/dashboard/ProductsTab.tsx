@@ -94,6 +94,21 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
     setSaving(false);
   };
 
+  const handleDelete = async (cloverItemId: string, itemName: string) => {
+    if (!confirm(`Delete "${itemName}"? This removes it from Clover POS and your online menu.`)) return;
+    const res = await fetch('/api/merchants/products/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mid, clover_item_id: cloverItemId }),
+    });
+    if (res.ok) {
+      setProducts(products.filter((p) => p.clover_item_id !== cloverItemId));
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to delete');
+    }
+  };
+
   const handleCreate = async () => {
     if (!newName || !newPrice) return;
     setSaving(true);
@@ -190,13 +205,15 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                   </span>
                 </td>
                 {canEdit && (
-                  <td className="px-5 py-3 text-right">
-                    <button
-                      onClick={() => openEdit(p)}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                    >
+                  <td className="px-5 py-3 text-right space-x-3">
+                    <button onClick={() => openEdit(p)} className="text-xs text-blue-600 hover:text-blue-800 font-medium">
                       Edit
                     </button>
+                    {canCreate && (
+                      <button onClick={() => handleDelete(p.clover_item_id, p.name)} className="text-xs text-red-400 hover:text-red-600 font-medium">
+                        Delete
+                      </button>
+                    )}
                   </td>
                 )}
               </tr>
