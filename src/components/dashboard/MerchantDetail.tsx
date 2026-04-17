@@ -292,6 +292,62 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                 <p className="font-medium text-gray-700 mt-0.5">{categories.length}</p>
               </div>
             </div>
+          {/* Business Hours */}
+          <div className="md:col-span-3 bg-white rounded-xl border border-gray-100 p-5">
+            <h3 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Business Hours
+              <span className="text-xs text-gray-400 font-normal">(synced from Clover)</span>
+            </h3>
+            {(() => {
+              const hours = (m.theme as Record<string, unknown>)?.businessHours as { day: string; open: number; close: number }[] | undefined;
+              if (!hours || !Array.isArray(hours) || hours.length === 0) {
+                return (
+                  <p className="text-xs text-gray-400">
+                    No business hours synced yet. Set hours in your Clover merchant dashboard, then click Sync Now.
+                  </p>
+                );
+              }
+              const dayOrder = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+              const formatTime = (mins: number) => {
+                const h = Math.floor(mins / 60);
+                const m = mins % 60;
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
+              };
+              const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+              const sorted = dayOrder.map(d => hours.find(h => h.day === d)).filter(Boolean) as typeof hours;
+              return (
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                  {sorted.map((h) => (
+                    <div
+                      key={h.day}
+                      className={`rounded-lg p-2.5 text-center ${
+                        h.day === today ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
+                      }`}
+                    >
+                      <p className={`text-[10px] font-bold uppercase tracking-wider ${h.day === today ? 'text-green-700' : 'text-gray-400'}`}>
+                        {h.day.slice(0, 3)}
+                      </p>
+                      <p className={`text-xs font-semibold mt-1 ${h.day === today ? 'text-green-800' : 'text-gray-700'}`}>
+                        {formatTime(h.open)}
+                      </p>
+                      <p className={`text-xs ${h.day === today ? 'text-green-600' : 'text-gray-400'}`}>
+                        {formatTime(h.close)}
+                      </p>
+                      {h.day === today && (
+                        <p className="text-[9px] font-bold text-green-600 mt-0.5">TODAY</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+
           {/* Sync Now button */}
           <div className="md:col-span-3">
             <button
