@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server';
 export async function POST(request: Request) {
   const supabase = createServiceClient();
   const body = await request.json();
-  const { mid, clover_item_id, name, price_cents, in_stock, hidden_online, hidden_in_clover, description } = body;
+  const { mid, clover_item_id, name, price_cents, in_stock, hidden_online, hidden_in_clover, description, image_url_remove } = body;
 
   if (!mid || !clover_item_id) {
     return NextResponse.json({ error: 'mid and clover_item_id required' }, { status: 400 });
@@ -88,6 +88,7 @@ export async function POST(request: Request) {
   if (hidden_online !== undefined) supabaseUpdate.hidden_online = hidden_online;
   if (hidden_in_clover !== undefined) supabaseUpdate.hidden_in_clover = hidden_in_clover;
   if (description !== undefined) supabaseUpdate.description = description;
+  if (image_url_remove) supabaseUpdate.image_url = null;
   supabaseUpdate.last_synced_at = new Date().toISOString();
 
   const { error } = await supabase

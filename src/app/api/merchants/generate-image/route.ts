@@ -29,20 +29,18 @@ export async function POST(request: Request) {
   const prompt = `Professional food photography of ${product_name}, appetizing presentation on a clean plate, restaurant quality, soft natural lighting, shallow depth of field, top-down angle, warm tones, high resolution, commercial food photography style, no text, no watermark`;
 
   try {
-    // Create prediction
-    const createRes = await fetch('https://api.replicate.com/v1/predictions', {
+    // Create prediction using the model-specific endpoint
+    const createRes = await fetch(`https://api.replicate.com/v1/models/${modelId}/predictions`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiToken}`,
         'Content-Type': 'application/json',
+        Prefer: 'wait',
       },
       body: JSON.stringify({
-        model: modelId,
         input: {
           prompt,
-          width: 1024,
-          height: 1024,
-          num_outputs: 1,
+          aspect_ratio: '1:1',
         },
       }),
     });
@@ -52,25 +50,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Replicate error: ${err}` }, { status: 502 });
     }
 
-    const prediction = await createRes.json();
+    let result = await createRes.json();
 
-    // Poll for completion (max 60 seconds)
-    let result = prediction;
-    const startTime = Date.now();
-    while (result.status !== 'succeeded' && result.status !== 'failed') {
-      if (Date.now() - startTime > 60000) {
-        return NextResponse.json({ error: 'Image generation timed out' }, { status: 504 });
+    // If Prefer: wait didn't complete, poll
+    if (result.status !== 'succeeded' && result.status !== 'failed') {
+      const startTime = Date.now();
+      while (result.status !== 'succeeded' && result.status !== 'failed') {
+        if (Date.now() - startTime > 120000) {
+          return NextResponse.json({ error: 'Image generation timed out' }, { status: 504 });
+        }
+        await new Promise((r) => setTimeout(r, 2000));
+        const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
+          headers: { Authorization: `Bearer ${apiToken}` },
+        });
+        result = await pollRes.json();
       }
-      await new Promise((r) => setTimeout(r, 2000));
-
-      const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
-        headers: { Authorization: `Bearer ${apiToken}` },
-      });
-      result = await pollRes.json();
     }
 
     if (result.status === 'failed') {
-      return NextResponse.json({ error: 'Image generation failed' }, { status: 502 });
+      return NextResponse.json({ error: result.error || 'Image generation failed' }, { status: 502 });
     }
 
     // Get the image URL from Replicate

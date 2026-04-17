@@ -307,11 +307,32 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                 {editImageUrl ? (
                   <div className="relative">
                     <img src={editImageUrl} alt="" className="w-full h-40 object-cover" />
-                    <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center">
-                      <span className="text-white font-medium text-sm opacity-0 hover:opacity-100 transition-opacity">
-                        Click or drag to replace
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center gap-3">
+                      <span className="text-white font-medium text-xs opacity-0 hover:opacity-100 bg-black/50 px-3 py-1.5 rounded-lg">
+                        Replace
                       </span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditImageUrl(null);
+                        if (editing) {
+                          // Clear image in database
+                          fetch('/api/merchants/products/update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ mid, clover_item_id: editing.clover_item_id, image_url_remove: true }),
+                          });
+                          setProducts(products.map(p => p.clover_item_id === editing.clover_item_id ? { ...p, image_url: null } : p));
+                        }
+                      }}
+                      className="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-xs shadow-md"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
                 ) : (
                   <div className="py-8 text-center">
