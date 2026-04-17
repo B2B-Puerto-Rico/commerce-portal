@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server';
 export async function POST(request: Request) {
   const supabase = createServiceClient();
   const body = await request.json();
-  const { mid, clover_item_id, name, price_cents, in_stock, hidden_online, description } = body;
+  const { mid, clover_item_id, name, price_cents, in_stock, hidden_online, hidden_in_clover, description } = body;
 
   if (!mid || !clover_item_id) {
     return NextResponse.json({ error: 'mid and clover_item_id required' }, { status: 400 });
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
   if (name !== undefined) cloverUpdate.name = name;
   if (price_cents !== undefined) cloverUpdate.price = price_cents;
   if (in_stock !== undefined) cloverUpdate.available = in_stock;
+  if (hidden_in_clover !== undefined) cloverUpdate.hidden = hidden_in_clover;
 
   // Push to Clover API
   const baseUrl = credentials.environment === 'sandbox'
@@ -85,6 +86,7 @@ export async function POST(request: Request) {
   if (price_cents !== undefined) supabaseUpdate.price_cents = price_cents;
   if (in_stock !== undefined) supabaseUpdate.in_stock = in_stock;
   if (hidden_online !== undefined) supabaseUpdate.hidden_online = hidden_online;
+  if (hidden_in_clover !== undefined) supabaseUpdate.hidden_in_clover = hidden_in_clover;
   if (description !== undefined) supabaseUpdate.description = description;
   supabaseUpdate.last_synced_at = new Date().toISOString();
 

@@ -42,6 +42,7 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
   const [editDesc, setEditDesc] = useState('');
   const [editStock, setEditStock] = useState(true);
   const [editHidden, setEditHidden] = useState(false);
+  const [editShowOnPOS, setEditShowOnPOS] = useState(true);
 
   // Create form state
   const [newName, setNewName] = useState('');
@@ -59,6 +60,7 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
     setEditDesc(p.description || '');
     setEditStock(p.in_stock);
     setEditHidden(p.hidden_online);
+    setEditShowOnPOS(!p.hidden_in_clover);
   };
 
   const handleSaveEdit = async () => {
@@ -77,13 +79,14 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
         description: editDesc,
         in_stock: editStock,
         hidden_online: editHidden,
+        hidden_in_clover: !editShowOnPOS,
       }),
     });
 
     if (res.ok) {
       setProducts(products.map((p) =>
         p.clover_item_id === editing.clover_item_id
-          ? { ...p, name: editName, price_cents: priceCents, description: editDesc, in_stock: editStock, hidden_online: editHidden }
+          ? { ...p, name: editName, price_cents: priceCents, description: editDesc, in_stock: editStock, hidden_online: editHidden, hidden_in_clover: !editShowOnPOS }
           : p
       ));
       setEditing(null);
@@ -182,7 +185,8 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
               <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Product</th>
               <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Price</th>
               <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Stock</th>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Visible</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Cart</th>
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">POS</th>
               {canEdit && <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Actions</th>}
             </tr>
           </thead>
@@ -200,8 +204,13 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                   </span>
                 </td>
                 <td className="px-5 py-3">
-                  <span className={`text-xs ${!p.hidden_online && !p.hidden_in_clover ? 'text-green-600' : 'text-gray-400'}`}>
-                    {!p.hidden_online && !p.hidden_in_clover ? 'Yes' : 'Hidden'}
+                  <span className={`text-xs font-medium ${!p.hidden_online ? 'text-green-600' : 'text-gray-400'}`}>
+                    {!p.hidden_online ? 'Visible' : 'Hidden'}
+                  </span>
+                </td>
+                <td className="px-5 py-3">
+                  <span className={`text-xs font-medium ${!p.hidden_in_clover ? 'text-green-600' : 'text-gray-400'}`}>
+                    {!p.hidden_in_clover ? 'Visible' : 'Hidden'}
                   </span>
                 </td>
                 {canEdit && (
@@ -262,6 +271,16 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                   <button onClick={() => setEditHidden(!editHidden)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${editHidden ? 'bg-red-400' : 'bg-gray-300'}`}>
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editHidden ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm text-gray-700">Show on POS</span>
+                    <span className="block text-xs text-gray-400">Visible on Clover devices</span>
+                  </div>
+                  <button onClick={() => setEditShowOnPOS(!editShowOnPOS)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${editShowOnPOS ? 'bg-green-500' : 'bg-gray-300'}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editShowOnPOS ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
               </div>
