@@ -221,6 +221,57 @@ export async function POST(request: Request) {
       errors.push({ step: 'items', message: e instanceof Error ? e.message : String(e) });
     }
 
+    // Step 5: Reconcile — remove items/categories from Supabase that no longer exist in Clover
+    try {
+      // Get all Clover item IDs we just synced
+      const cloverItemIds = await paginate('/items', 'fields=id');
+      const cloverIds = new Set((cloverItemIds as { id: string }[]).map((i) => i.id));
+
+      // Get all Supabase product IDs for this merchant
+      const { data: supaProducts } = await supabase
+        .from('products')
+        .select('clover_item_id')
+        .eq('mid', mid);
+
+      // Delete products that exist in Supabase but not in Clover
+      const staleIds = (supaProducts || [])
+        .filter((p) => !cloverIds.has(p.clover_item_id))
+        .map((p) => p.clover_item_id);
+
+      if (staleIds.length > 0) {
+        await supabase
+          .from('products')
+          .delete()
+          .eq('mid', mid)
+          .in('clover_item_id', staleIds);
+        console.info(`[Sync:${mid}] Removed ${staleIds.length} stale products`);
+      }
+
+      // Same for categories
+      const cloverCatIds = await paginate('/categories', 'fields=id');
+      const cloverCatSet = new Set((cloverCatIds as { id: string }[]).map((c) => c.id));
+
+      const { data: supaCats } = await supabase
+        .from('categories')
+        .select('clover_category_id')
+        .eq('mid', mid);
+
+      const staleCatIds = (supaCats || [])
+        .filter((c) => !cloverCatSet.has(c.clover_category_id))
+        .map((c) => c.clover_category_id);
+
+      if (staleCatIds.length > 0) {
+        await supabase
+          .from('categories')
+          .delete()
+          .eq('mid', mid)
+          .in('clover_category_id', staleCatIds);
+        console.info(`[Sync:${mid}] Removed ${staleCatIds.length} stale categories`);
+      }
+    } catch (e) {
+      errors.push({ step: 'reconcile', message: e instanceof Error ? e.message : String(e) });
+    }
+
     // Fetch business hours from Clover
     let businessHours = null;
     try {
