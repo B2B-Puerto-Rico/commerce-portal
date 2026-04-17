@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { createServiceClient } from '@/lib/supabase/server';
 import { AddMerchantForm } from '@/components/dashboard/AddMerchantForm';
 
+export const dynamic = 'force-dynamic';
+
 export default async function MerchantsPage() {
   const supabase = createServiceClient();
 

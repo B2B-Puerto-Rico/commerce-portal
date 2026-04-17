@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { createServiceClient } from '@/lib/supabase/server';
 import { MerchantDetail } from '@/components/dashboard/MerchantDetail';
 
+export const dynamic = 'force-dynamic';
+
 export default async function MerchantPage({
   params,
 }: {

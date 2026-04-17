@@ -1,5 +1,7 @@
 import { createServiceClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
