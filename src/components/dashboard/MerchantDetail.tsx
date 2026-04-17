@@ -499,7 +499,18 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
               ) : orders.map((o) => (
                 <tr key={o.id as string} className="hover:bg-gray-50/50">
                   <td className="px-5 py-3">
-                    <span className="text-xs font-mono text-gray-500">{(o.id as string).slice(0, 8)}</span>
+                    {(o.clover_order_id as string) ? (
+                      <a
+                        href={`${(m.environment as string) === 'sandbox' ? 'https://sandbox.dev.clover.com' : 'https://www.clover.com'}/merchants/${m.mid}/orders/${o.clover_order_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-mono font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        #{o.clover_order_id as string}
+                      </a>
+                    ) : (
+                      <span className="text-xs font-mono text-gray-400">{(o.id as string).slice(0, 8)}</span>
+                    )}
                   </td>
                   <td className="px-5 py-3">
                     <span className="text-sm font-medium text-gray-900">{o.customer_name as string}</span>

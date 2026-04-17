@@ -33,12 +33,18 @@ export default async function OrdersPage() {
   const mids = Array.from(new Set((orders || []).map((o) => o.mid)));
   const { data: merchants } = await supabase
     .from('merchants')
-    .select('mid, business_name')
+    .select('mid, business_name, environment')
     .in('mid', mids.length > 0 ? mids : ['_']);
 
   const merchantMap = new Map(
-    (merchants || []).map((m) => [m.mid, m.business_name])
+    (merchants || []).map((m) => [m.mid, { name: m.business_name, env: m.environment }])
   );
+
+  const cloverOrderUrl = (mid: string, cloverOrderId: string) => {
+    const env = merchantMap.get(mid)?.env;
+    const base = env === 'sandbox' ? 'https://sandbox.dev.clover.com' : 'https://www.clover.com';
+    return `${base}/merchants/${mid}/orders/${cloverOrderId}`;
+  };
 
   // Stats
   const total = orders?.length || 0;
@@ -94,10 +100,21 @@ export default async function OrdersPage() {
               ) : orders.map((o) => (
                 <tr key={o.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-5 py-3">
-                    <span className="text-xs font-mono text-gray-500">{o.id.slice(0, 8)}</span>
+                    {o.clover_order_id ? (
+                      <a
+                        href={cloverOrderUrl(o.mid, o.clover_order_id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-mono font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        #{o.clover_order_id}
+                      </a>
+                    ) : (
+                      <span className="text-xs font-mono text-gray-400">{o.id.slice(0, 8)}</span>
+                    )}
                   </td>
                   <td className="px-5 py-3">
-                    <span className="text-sm text-gray-700">{merchantMap.get(o.mid) || o.mid}</span>
+                    <span className="text-sm text-gray-700">{merchantMap.get(o.mid)?.name || o.mid}</span>
                   </td>
                   <td className="px-5 py-3">
                     <span className="text-sm font-medium text-gray-900">{o.customer_name}</span>

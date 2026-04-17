@@ -30,12 +30,21 @@ export default async function MerchantOrdersPage() {
   const mid = user.app_metadata?.mid;
   if (!mid) redirect('/login');
 
+  const { data: merchant } = await serviceClient
+    .from('merchants')
+    .select('environment')
+    .eq('mid', mid)
+    .single();
+
   const { data: orders } = await serviceClient
     .from('cart_orders')
     .select('*')
     .eq('mid', mid)
     .order('created_at', { ascending: false })
     .limit(100);
+
+  const env = merchant?.environment || 'production';
+  const cloverBase = env === 'sandbox' ? 'https://sandbox.dev.clover.com' : 'https://www.clover.com';
 
   const revenue = orders?.filter((o) => o.status === 'paid').reduce((sum, o) => sum + o.total_cents, 0) || 0;
   const paidCount = orders?.filter((o) => o.status === 'paid').length || 0;
@@ -66,6 +75,7 @@ export default async function MerchantOrdersPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-50">
+              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Order</th>
               <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Customer</th>
               <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Total</th>
               <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Status</th>
@@ -75,12 +85,26 @@ export default async function MerchantOrdersPage() {
           <tbody className="divide-y divide-gray-50">
             {(!orders || orders.length === 0) ? (
               <tr>
-                <td colSpan={4} className="px-5 py-12 text-center text-sm text-gray-400">
+                <td colSpan={5} className="px-5 py-12 text-center text-sm text-gray-400">
                   No orders yet. Orders appear here when customers check out through your cart widget.
                 </td>
               </tr>
             ) : orders.map((o) => (
               <tr key={o.id} className="hover:bg-gray-50/50">
+                <td className="px-5 py-3">
+                  {o.clover_order_id ? (
+                    <a
+                      href={`${cloverBase}/merchants/${mid}/orders/${o.clover_order_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      #{o.clover_order_id}
+                    </a>
+                  ) : (
+                    <span className="text-xs font-mono text-gray-400">{o.id.slice(0, 8)}</span>
+                  )}
+                </td>
                 <td className="px-5 py-3">
                   <span className="text-sm font-medium text-gray-900">{o.customer_name}</span>
                   <span className="block text-xs text-gray-400">{o.customer_email}</span>
