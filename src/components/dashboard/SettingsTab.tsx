@@ -47,7 +47,11 @@ export function SettingsTab({
     });
     if (res.ok) {
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      // Reload page so all tabs reflect the changes
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to save');
     }
     setSaving(false);
   };
