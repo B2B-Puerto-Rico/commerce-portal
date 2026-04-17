@@ -225,12 +225,23 @@ export async function POST(request: Request) {
     let businessHours = null;
     try {
       const hoursData = await cloverGet('/opening_hours');
-      if (hoursData && hoursData.elements) {
-        businessHours = hoursData.elements.map((h: { day: string; open: number; close: number }) => ({
-          day: h.day,
-          open: h.open, // minutes from midnight
-          close: h.close, // minutes from midnight
-        }));
+      if (hoursData && hoursData.elements && hoursData.elements.length > 0) {
+        // Clover format: { elements: [{ monday: { elements: [{ start: 900, end: 1700 }] }, ... }] }
+        const schedule = hoursData.elements[0];
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        businessHours = days.map((day) => {
+          const dayData = schedule[day];
+          const slots = dayData?.elements || [];
+          if (slots.length === 0) {
+            return { day: day.toUpperCase(), open: -1, close: -1, closed: true };
+          }
+          return {
+            day: day.toUpperCase(),
+            open: slots[0].start, // minutes from midnight
+            close: slots[0].end,
+            closed: false,
+          };
+        });
       }
     } catch {
       // Non-fatal — hours not available for all merchants

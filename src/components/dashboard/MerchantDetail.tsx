@@ -319,30 +319,44 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                 return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
               };
               const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-              const sorted = dayOrder.map(d => hours.find(h => h.day === d)).filter(Boolean) as typeof hours;
+              const sorted = dayOrder.map(d => hours.find(h => h.day === d)).filter(Boolean) as (typeof hours[0] & { closed?: boolean })[];
               return (
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
-                  {sorted.map((h) => (
-                    <div
-                      key={h.day}
-                      className={`rounded-lg p-2.5 text-center ${
-                        h.day === today ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
-                      }`}
-                    >
-                      <p className={`text-[10px] font-bold uppercase tracking-wider ${h.day === today ? 'text-green-700' : 'text-gray-400'}`}>
-                        {h.day.slice(0, 3)}
-                      </p>
-                      <p className={`text-xs font-semibold mt-1 ${h.day === today ? 'text-green-800' : 'text-gray-700'}`}>
-                        {formatTime(h.open)}
-                      </p>
-                      <p className={`text-xs ${h.day === today ? 'text-green-600' : 'text-gray-400'}`}>
-                        {formatTime(h.close)}
-                      </p>
-                      {h.day === today && (
-                        <p className="text-[9px] font-bold text-green-600 mt-0.5">TODAY</p>
-                      )}
-                    </div>
-                  ))}
+                  {sorted.map((h) => {
+                    const isClosed = h.closed || h.open === -1;
+                    const isToday = h.day === today;
+                    return (
+                      <div
+                        key={h.day}
+                        className={`rounded-xl p-3 text-center ${
+                          isToday
+                            ? isClosed ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'
+                            : 'bg-gray-50'
+                        }`}
+                      >
+                        <p className={`text-[10px] font-bold uppercase tracking-wider ${
+                          isToday ? (isClosed ? 'text-red-700' : 'text-green-700') : 'text-gray-400'
+                        }`}>
+                          {h.day.slice(0, 3)}
+                        </p>
+                        {isClosed ? (
+                          <p className={`text-xs font-semibold mt-1.5 ${isToday ? 'text-red-600' : 'text-gray-400'}`}>Closed</p>
+                        ) : (
+                          <>
+                            <p className={`text-xs font-semibold mt-1 ${isToday ? 'text-green-800' : 'text-gray-700'}`}>
+                              {formatTime(h.open)}
+                            </p>
+                            <p className={`text-[11px] ${isToday ? 'text-green-600' : 'text-gray-400'}`}>
+                              {formatTime(h.close)}
+                            </p>
+                          </>
+                        )}
+                        {isToday && (
+                          <p className={`text-[9px] font-bold mt-0.5 ${isClosed ? 'text-red-600' : 'text-green-600'}`}>TODAY</p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })()}
