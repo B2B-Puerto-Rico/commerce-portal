@@ -36,11 +36,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-gray-900 rounded-xl mx-auto mb-4 flex items-center justify-center">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
+          <img src="/logo.png" alt="B2B Commerce" className="w-16 h-16 mx-auto mb-4 rounded-xl" />
           <h1 className="text-xl font-bold text-gray-900">Commerce Portal</h1>
           <p className="text-sm text-gray-500 mt-1">B2B Commerce Platform Admin</p>
         </div>

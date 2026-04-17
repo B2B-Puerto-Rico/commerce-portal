@@ -16,12 +16,8 @@ export function Header({ email }: { email?: string }) {
     <header className="h-14 md:h-16 border-b border-gray-100 bg-white flex items-center justify-between px-4 md:px-6">
       {/* Mobile: show logo */}
       <div className="md:hidden flex items-center gap-2">
-        <div className="w-7 h-7 bg-gray-900 rounded-lg flex items-center justify-center">
-          <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-        <span className="font-bold text-sm text-gray-900">Commerce</span>
+        <img src="/logo.png" alt="" className="w-7 h-7 rounded-lg" />
+        <span className="font-bold text-sm text-gray-900">B2B Commerce</span>
       </div>
 
       {/* Desktop: empty space (sidebar handles nav) */}
