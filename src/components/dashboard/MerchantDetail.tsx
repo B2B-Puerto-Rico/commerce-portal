@@ -34,7 +34,29 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
   const [toggling, setToggling] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [inviteResult, setInviteResult] = useState<{ email: string; password: string } | null>(null);
   const router = useRouter();
+
+  const handleInvite = async () => {
+    if (!inviteEmail) return;
+    setInviting(true);
+    setInviteResult(null);
+    const res = await fetch('/api/merchants/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mid: m.mid, email: inviteEmail }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setInviteResult({ email: data.email, password: data.temp_password });
+      setInviteEmail('');
+    } else {
+      alert(data.error || 'Failed to invite');
+    }
+    setInviting(false);
+  };
   const m = merchant;
 
   const handleToggleCart = async () => {
@@ -683,6 +705,53 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                 </div>
               </details>
             </div>
+          </div>
+
+          {/* Invite Merchant User */}
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <h3 className="font-semibold text-sm text-gray-900 mb-1">Invite Merchant</h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Create a login for the merchant so they can manage their own products, orders, and cart settings.
+            </p>
+
+            {inviteResult ? (
+              <div className="bg-green-50 rounded-lg p-4 space-y-2">
+                <p className="text-sm font-semibold text-green-800">Merchant account created!</p>
+                <p className="text-xs text-green-700">Share these credentials with the merchant:</p>
+                <div className="bg-white rounded-lg p-3 space-y-1 text-sm font-mono">
+                  <p>Email: <strong>{inviteResult.email}</strong></p>
+                  <p>Password: <strong>{inviteResult.password}</strong></p>
+                  <p className="text-xs text-gray-400 mt-2">Login URL: commerce-portal-prod.b2bweb.app/login</p>
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `Login: commerce-portal-prod.b2bweb.app/login\nEmail: ${inviteResult.email}\nPassword: ${inviteResult.password}`
+                    );
+                  }}
+                  className="text-xs text-green-700 hover:text-green-900 font-medium"
+                >
+                  Copy credentials
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="merchant@email.com"
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+                <button
+                  onClick={handleInvite}
+                  disabled={inviting || !inviteEmail}
+                  className="bg-gray-900 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400"
+                >
+                  {inviting ? 'Creating...' : 'Invite'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
