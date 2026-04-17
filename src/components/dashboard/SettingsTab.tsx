@@ -23,6 +23,7 @@ export function SettingsTab({
 }: Props) {
   const theme = (m.theme as Record<string, string>) || {};
 
+  const [bannerUrlState, setBannerUrlState] = useState(theme.bannerUrl || '');
   const [siteUrl, setSiteUrl] = useState((m.site_url as string) || '');
   const [githubRepo, setGithubRepo] = useState((m.github_repo as string) || '');
   const [primaryColor, setPrimaryColor] = useState(theme.primaryColor || '#000000');
@@ -44,13 +45,12 @@ export function SettingsTab({
         site_url: siteUrl || null,
         github_repo: githubRepo || null,
         cart_tier: tier,
-        theme: { primaryColor, buttonText },
+        theme: { primaryColor, buttonText, bannerUrl: bannerUrlState || undefined },
       }),
     });
     if (res.ok) {
       setSaved(true);
-      // Reload page so all tabs reflect the changes
-      setTimeout(() => window.location.reload(), 1000);
+      setTimeout(() => setSaved(false), 3000);
     } else {
       const data = await res.json();
       alert(data.error || 'Failed to save');
@@ -109,9 +109,9 @@ export function SettingsTab({
           className="relative border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-gray-400 transition-colors cursor-pointer"
           onClick={() => document.getElementById('banner-upload')?.click()}
         >
-          {theme.bannerUrl ? (
+          {bannerUrlState ? (
             <div className="relative">
-              <img src={theme.bannerUrl} alt="" className="w-full h-32 object-cover" />
+              <img src={bannerUrlState} alt="" className="w-full h-32 object-cover" />
               <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center">
                 <span className="text-white text-sm font-medium opacity-0 hover:opacity-100">Click to replace</span>
               </div>
@@ -133,8 +133,7 @@ export function SettingsTab({
             const res = await fetch('/api/merchants/upload-banner', { method: 'POST', body: fd });
             if (res.ok) {
               const data = await res.json();
-              theme.bannerUrl = data.banner_url;
-              window.location.reload();
+              setBannerUrlState(data.banner_url);
             }
             e.target.value = '';
           }} />
