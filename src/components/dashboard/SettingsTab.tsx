@@ -101,6 +101,46 @@ export function SettingsTab({
         </div>
       </div>
 
+      {/* Banner Image */}
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <h3 className="font-semibold text-sm text-gray-900 mb-1">Store Banner</h3>
+        <p className="text-xs text-gray-400 mb-3">This image appears at the top of your cart widget. Recommended: 1200x400px.</p>
+        <div
+          className="relative border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-gray-400 transition-colors cursor-pointer"
+          onClick={() => document.getElementById('banner-upload')?.click()}
+        >
+          {theme.bannerUrl ? (
+            <div className="relative">
+              <img src={theme.bannerUrl} alt="" className="w-full h-32 object-cover" />
+              <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center">
+                <span className="text-white text-sm font-medium opacity-0 hover:opacity-100">Click to replace</span>
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center">
+              <svg className="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="text-xs text-gray-400">Click to upload a banner image</p>
+            </div>
+          )}
+          <input id="banner-upload" type="file" accept="image/*" className="hidden" onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('mid', mid);
+            const res = await fetch('/api/merchants/upload-banner', { method: 'POST', body: fd });
+            if (res.ok) {
+              const data = await res.json();
+              theme.bannerUrl = data.banner_url;
+              window.location.reload();
+            }
+            e.target.value = '';
+          }} />
+        </div>
+      </div>
+
       {/* Cart Appearance */}
       <div className="bg-white rounded-xl border border-gray-100 p-5">
         <h3 className="font-semibold text-sm text-gray-900 mb-4">Cart Appearance</h3>
