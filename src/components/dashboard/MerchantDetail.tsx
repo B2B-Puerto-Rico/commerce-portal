@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 function formatPrice(cents: number): string {
@@ -171,9 +170,9 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
     <div>
       {/* Breadcrumb + header */}
       <div className="mb-6">
-        <Link href="/dashboard/merchants" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+        <a href="/dashboard/merchants" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
           &larr; All merchants
-        </Link>
+        </a>
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900">{m.business_name as string}</h1>

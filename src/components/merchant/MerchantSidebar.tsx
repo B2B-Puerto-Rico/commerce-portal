@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export function MerchantSidebar({ businessName }: { businessName: string }) {
@@ -55,7 +54,7 @@ export function MerchantSidebar({ businessName }: { businessName: string }) {
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
-            <Link
+            <a
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
@@ -66,7 +65,7 @@ export function MerchantSidebar({ businessName }: { businessName: string }) {
             >
               <span className={isActive ? 'text-white' : 'text-gray-400'}>{item.icon}</span>
               {item.label}
-            </Link>
+            </a>
           );
         })}
       </nav>

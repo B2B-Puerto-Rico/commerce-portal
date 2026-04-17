@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { createServiceClient } from '@/lib/supabase/server';
 import { AddMerchantForm } from '@/components/dashboard/AddMerchantForm';
 
@@ -66,7 +65,7 @@ export default async function MerchantsPage() {
               {(merchants || []).map((m) => (
                 <tr key={m.mid} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-5 py-4">
-                    <Link
+                    <a
                       href={`/dashboard/merchants/${m.mid}`}
                       className="group"
                     >
@@ -76,7 +75,7 @@ export default async function MerchantsPage() {
                       <span className="block text-xs text-gray-400 font-mono mt-0.5">
                         {m.mid}
                       </span>
-                    </Link>
+                    </a>
                   </td>
                   <td className="px-5 py-4">
                     <span
