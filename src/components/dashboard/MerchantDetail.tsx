@@ -714,8 +714,26 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                       >
                         #{o.clover_order_id as string}
                       </a>
+                    ) : (o.provider_txn_id as string) ? (
+                      <a
+                        href={`${(m.valor_environment as string) === 'production' ? 'https://online.valorpaytech.com' : 'https://demo.valorpaytech.com'}/merchant-management/transactions`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-mono font-semibold text-amber-600 hover:text-amber-800 hover:underline"
+                      >
+                        TXN-{o.provider_txn_id as string}
+                      </a>
                     ) : (
                       <span className="text-xs font-mono text-gray-400">{(o.id as string).slice(0, 8)}</span>
+                    )}
+                    {(o.payment_provider as string) && (
+                      <span className={`ml-1.5 text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full ${
+                        (o.payment_provider as string) === 'valor'
+                          ? 'bg-amber-50 text-amber-600'
+                          : 'bg-green-50 text-green-600'
+                      }`}>
+                        {o.payment_provider as string}
+                      </span>
                     )}
                   </td>
                   <td className="px-5 py-3">
