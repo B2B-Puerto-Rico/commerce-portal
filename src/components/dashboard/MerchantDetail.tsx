@@ -800,6 +800,31 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColor(o.status as string)}`}>
                       {o.status as string}
                     </span>
+                    {(o.status as string) === 'pending' && (o.payment_provider as string) === 'valor' && (
+                      <button
+                        onClick={async () => {
+                          const btn = document.getElementById(`check-${o.id}`) as HTMLButtonElement;
+                          if (btn) { btn.disabled = true; btn.textContent = 'Checking...'; }
+                          try {
+                            const cartDomain = 'https://commerce-cart.b2bweb.app';
+                            const res = await fetch(`${cartDomain}/api/orders/${o.id}/check-status`, { method: 'POST' });
+                            const data = await res.json();
+                            if (data.status === 'paid') {
+                              if (btn) { btn.textContent = 'Paid!'; btn.className = 'ml-2 text-[10px] font-semibold text-green-600'; }
+                              router.refresh();
+                            } else {
+                              if (btn) { btn.disabled = false; btn.textContent = 'Check Payment'; }
+                            }
+                          } catch {
+                            if (btn) { btn.disabled = false; btn.textContent = 'Check Payment'; }
+                          }
+                        }}
+                        id={`check-${o.id}`}
+                        className="ml-2 text-[10px] font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      >
+                        Check Payment
+                      </button>
+                    )}
                   </td>
                   <td className="px-5 py-3 text-xs text-gray-400">{formatDate(o.created_at as string)}</td>
                 </tr>

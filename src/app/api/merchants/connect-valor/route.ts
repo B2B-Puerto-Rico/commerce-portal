@@ -32,6 +32,13 @@ export async function POST(request: Request) {
     const { data: encAppKey } = await supabase.rpc('encrypt_token' as never, { plaintext: app_key } as never);
     const { data: encEpi } = await supabase.rpc('encrypt_token' as never, { plaintext: epi } as never);
 
+    // Preserve existing webhook secret if one exists
+    const { data: existing } = await supabase
+      .from('merchants')
+      .select('valor_webhook_secret')
+      .eq('mid', mid)
+      .single();
+
     const { error: updateErr } = await supabase
       .from('merchants')
       .update({
@@ -43,7 +50,7 @@ export async function POST(request: Request) {
         valor_checkout_mode: checkout_mode || 'passage',
         valor_surcharge_enabled: surcharge_enabled || false,
         valor_surcharge_rate: surcharge_rate || 0,
-        valor_webhook_secret: crypto.randomUUID(),
+        valor_webhook_secret: existing?.valor_webhook_secret || crypto.randomUUID(),
       })
       .eq('mid', mid);
 
