@@ -743,6 +743,51 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       {/* Orders tab */}
       {/* ================================================================= */}
       {tab === 'orders' && (
+        <div className="space-y-3">
+          {/* Orders toolbar */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.refresh()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium text-gray-700 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh Orders
+            </button>
+            {orders.some((o) => (o.status as string) === 'pending' && (o.payment_provider as string) === 'valor') && (
+              <button
+                id="check-all-btn"
+                onClick={async () => {
+                  const btn = document.getElementById('check-all-btn') as HTMLButtonElement;
+                  if (btn) { btn.disabled = true; btn.textContent = 'Checking all...'; }
+                  const pendingValor = orders.filter((o) => (o.status as string) === 'pending' && (o.payment_provider as string) === 'valor');
+                  let found = 0;
+                  for (const o of pendingValor) {
+                    try {
+                      const res = await fetch('/api/merchants/check-order-status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ order_id: o.id }),
+                      });
+                      const data = await res.json();
+                      if (data.status === 'paid') found++;
+                    } catch { /* continue */ }
+                  }
+                  if (btn) { btn.disabled = false; btn.textContent = `Check All Valor Payments`; }
+                  if (found > 0) {
+                    router.refresh();
+                  } else {
+                    alert(`Checked ${pendingValor.length} pending orders — none matched a Valor payment yet. The debug info in the browser console may help.`);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 rounded-lg text-xs font-semibold text-amber-800 transition-colors"
+              >
+                Check All Valor Payments
+              </button>
+            )}
+          </div>
+
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
             <thead>
@@ -834,6 +879,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       )}
 
