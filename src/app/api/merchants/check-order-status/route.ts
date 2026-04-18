@@ -1,9 +1,8 @@
 /**
- * Check Valor order payment status — portal-side.
+ * Check Valor order payment status.
  *
- * Queries Valor's open batch to find matching transactions.
- * Matches by amount since Valor hosted page doesn't preserve our invoice number.
- * Updates order in Supabase and triggers email via cart API.
+ * Queries Valor's open batch and matches transactions to pending orders.
+ * Returns debug info so we can see exactly what's happening.
  */
 
 import { NextResponse } from 'next/server';
@@ -42,7 +41,11 @@ export async function POST(request: Request) {
 
   const credentials = creds as unknown as Record<string, unknown>;
   if (!credentials?.valor_app_id) {
-    return NextResponse.json({ error: 'Valor credentials not found' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Valor credentials not found — reconnect Valor in the Connect Valor tab',
+      status: 'pending',
+      debug: { mid: order.mid, has_creds: false },
+    }, { status: 500 });
   }
 
   const baseUrl = (credentials.valor_environment as string) === 'production'
@@ -50,7 +53,6 @@ export async function POST(request: Request) {
     : 'https://securelink-staging.valorpaytech.com:4430';
 
   try {
-    // Query open batch — requires txn_type field
     const batchRes = await fetch(`${baseUrl}/?openbatch=`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -63,101 +65,145 @@ export async function POST(request: Request) {
     });
     const batchData = await batchRes.json();
 
-    if (batchData.status !== 'SUCCESS' || !batchData.batchSummaryDetails) {
+    if (batchData.status !== 'SUCCESS') {
       return NextResponse.json({
         status: 'pending',
         checked: true,
-        error: `Valor batch query returned: ${batchData.status || batchData.error_no}`,
+        error: 'Valor batch query failed',
+        debug: {
+          valor_status: batchData.status,
+          valor_error: batchData.error_no || batchData.errors,
+          valor_msg: batchData.msg || batchData.statusMsg,
+        },
       });
     }
 
-    const txns = batchData.batchSummaryDetails as Record<string, unknown>[];
-
-    // Match by amount — Valor hosted page uses sequential invoice numbers,
-    // not our order UUID. Match by total amount (in cents) and order timestamp.
+    const txns = (batchData.batchSummaryDetails || []) as Record<string, unknown>[];
     const orderTotalCents = order.total_cents as number;
+    const orderSubtotalCents = order.subtotal_cents as number;
+    const orderTaxCents = order.tax_cents as number;
+    const orderSurchargeCents = (order.surcharge_cents as number) || 0;
     const orderCreatedAt = new Date(order.created_at as string).getTime();
 
-    // Find transactions that match the total amount, ordered by most recent
-    const candidates = txns
-      .filter((t) => {
-        const txAmount = t.txamount as number; // txamount is total including surcharge, in cents
-        return txAmount === orderTotalCents && t.response_code === '00';
-      })
-      .sort((a, b) => {
-        const aTime = new Date(a.created_at as string).getTime();
-        const bTime = new Date(b.created_at as string).getTime();
-        return bTime - aTime; // newest first
-      });
+    // Get all orders already matched to Valor txn_ids so we don't double-match
+    const { data: matchedOrders } = await supabase
+      .from('cart_orders')
+      .select('provider_txn_id')
+      .eq('mid', order.mid)
+      .eq('payment_provider', 'valor')
+      .not('provider_txn_id', 'is', null);
 
-    // Find the closest match by timestamp (created after our order)
-    const matchingTxn = candidates.find((t) => {
-      const txTime = new Date(t.created_at as string).getTime();
-      // Transaction should be after order creation, within 1 hour
-      return txTime >= orderCreatedAt && txTime - orderCreatedAt < 3600000;
-    }) || candidates[0]; // fallback to any amount match
+    const usedTxnIds = new Set((matchedOrders || []).map((o) => o.provider_txn_id));
 
-    if (!matchingTxn) {
-      // Also try matching without surcharge — base amount
-      const baseMatch = txns.find((t) => {
-        const baseAmount = t.amount as number;
-        const subtotalPlusTax = (order.subtotal_cents as number) + (order.tax_cents as number);
-        return baseAmount === subtotalPlusTax && t.response_code === '00';
-      });
+    // Try multiple matching strategies
+    const approvedTxns = txns.filter((t) =>
+      t.response_code === '00' && !usedTxnIds.has(String(t.txn_id))
+    );
 
-      if (!baseMatch) {
-        return NextResponse.json({ status: 'pending', checked: true, found: false });
-      }
+    // Strategy 1: Match by txamount (total with surcharge) = our total_cents
+    let match = approvedTxns.find((t) => (t.txamount as number) === orderTotalCents);
 
-      // Use the base match
-      return await updateOrderToPaid(supabase, order, order_id, baseMatch);
+    // Strategy 2: Match by amount (base) = our subtotal_cents
+    if (!match) {
+      match = approvedTxns.find((t) => (t.amount as number) === orderSubtotalCents);
     }
 
-    return await updateOrderToPaid(supabase, order, order_id, matchingTxn);
+    // Strategy 3: Match by amount = subtotal + tax (no surcharge)
+    if (!match) {
+      const subtotalPlusTax = orderSubtotalCents + orderTaxCents;
+      match = approvedTxns.find((t) => (t.amount as number) === subtotalPlusTax);
+    }
+
+    // Strategy 4: Match by txamount = subtotal + tax + surcharge (our total)
+    // but also check if txamount matches without surcharge
+    if (!match) {
+      const noSurchargeTotal = orderSubtotalCents + orderTaxCents;
+      match = approvedTxns.find((t) => (t.txamount as number) === noSurchargeTotal);
+    }
+
+    // Strategy 5: Most recent unmatched transaction created after the order
+    if (!match) {
+      const recentMatch = approvedTxns
+        .filter((t) => new Date(t.created_at as string).getTime() >= orderCreatedAt)
+        .sort((a, b) =>
+          new Date(a.created_at as string).getTime() - new Date(b.created_at as string).getTime()
+        )[0];
+      match = recentMatch || null;
+    }
+
+    if (!match) {
+      return NextResponse.json({
+        status: 'pending',
+        checked: true,
+        found: false,
+        debug: {
+          order_total_cents: orderTotalCents,
+          order_subtotal_cents: orderSubtotalCents,
+          order_tax_cents: orderTaxCents,
+          order_surcharge_cents: orderSurchargeCents,
+          order_created: order.created_at,
+          valor_txn_count: approvedTxns.length,
+          valor_txns: approvedTxns.map((t) => ({
+            txn_id: t.txn_id,
+            amount: t.amount,
+            txamount: t.txamount,
+            created: t.created_at,
+          })),
+          already_matched_ids: Array.from(usedTxnIds),
+        },
+      });
+    }
+
+    // Found a match — update order to paid
+    const txnId = String(match.txn_id || '');
+
+    await supabase
+      .from('cart_orders')
+      .update({
+        status: 'paid',
+        provider_txn_id: txnId,
+        provider_meta: {
+          ref_txn_id: txnId,
+          rrn: match.rrn,
+          auth_code: match.approval_code,
+          pan: (match.masked_card_no as string)?.replace(/\s/g, ''),
+          card_brand: match.card_scheme,
+          amount_cents: match.amount,
+          total_cents: match.txamount,
+          source: 'check-status',
+        },
+      })
+      .eq('id', order_id)
+      .eq('status', 'pending');
+
+    // Send confirmation emails
+    await sendEmails(supabase, order, order_id);
+
+    return NextResponse.json({
+      status: 'paid',
+      checked: true,
+      found: true,
+      transaction_id: txnId,
+    });
   } catch (err) {
-    console.error('[CheckOrderStatus] Error:', err);
     return NextResponse.json({
       status: 'pending',
       checked: true,
-      error: 'Failed to query Valor. Please try again.',
+      error: `Exception: ${err instanceof Error ? err.message : String(err)}`,
     });
   }
 }
 
-async function updateOrderToPaid(
+async function sendEmails(
   supabase: ReturnType<typeof createServiceClient>,
   order: Record<string, unknown>,
   orderId: string,
-  txn: Record<string, unknown>,
 ) {
-  const txnId = String(txn.txn_id || txn.txnid || '');
-
-  await supabase
-    .from('cart_orders')
-    .update({
-      status: 'paid',
-      provider_txn_id: txnId,
-      provider_meta: {
-        ref_txn_id: txnId,
-        rrn: txn.rrn,
-        auth_code: txn.approval_code,
-        pan: (txn.masked_card_no as string)?.replace(/\s/g, ''),
-        card_brand: txn.card_scheme,
-        source: 'check-status',
-      },
-    })
-    .eq('id', orderId)
-    .eq('status', 'pending');
-
-  // Trigger email sending via cart API
-  const cartDomain = process.env.CART_WEBHOOK_DOMAIN || 'https://commerce-cart.b2bweb.app';
-  fetch(`${cartDomain}/api/orders/${orderId}/check-status`, { method: 'POST' }).catch(() => {});
-
-  return NextResponse.json({
-    status: 'paid',
-    checked: true,
-    found: true,
-    transaction_id: txnId,
-    amount_cents: txn.txamount,
-  });
+  try {
+    // Trigger email via cart API
+    const cartDomain = process.env.CART_WEBHOOK_DOMAIN || 'https://commerce-cart.b2bweb.app';
+    await fetch(`${cartDomain}/api/orders/${orderId}/check-status`, { method: 'POST' });
+  } catch {
+    // Emails are best-effort
+  }
 }
