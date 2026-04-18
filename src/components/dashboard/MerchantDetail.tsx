@@ -806,17 +806,20 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                           const btn = document.getElementById(`check-${o.id}`) as HTMLButtonElement;
                           if (btn) { btn.disabled = true; btn.textContent = 'Checking...'; }
                           try {
-                            const cartDomain = 'https://commerce-cart.b2bweb.app';
-                            const res = await fetch(`${cartDomain}/api/orders/${o.id}/check-status`, { method: 'POST' });
+                            const res = await fetch('/api/merchants/check-order-status', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ order_id: o.id }),
+                            });
                             const data = await res.json();
                             if (data.status === 'paid') {
-                              if (btn) { btn.textContent = 'Paid!'; btn.className = 'ml-2 text-[10px] font-semibold text-green-600'; }
-                              router.refresh();
+                              if (btn) { btn.textContent = 'Paid!'; btn.className = 'ml-2 text-[10px] font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full'; }
+                              setTimeout(() => router.refresh(), 1000);
                             } else {
-                              if (btn) { btn.disabled = false; btn.textContent = 'Check Payment'; }
+                              if (btn) { btn.disabled = false; btn.textContent = 'Not yet — Retry'; }
                             }
                           } catch {
-                            if (btn) { btn.disabled = false; btn.textContent = 'Check Payment'; }
+                            if (btn) { btn.disabled = false; btn.textContent = 'Error — Retry'; }
                           }
                         }}
                         id={`check-${o.id}`}
