@@ -41,6 +41,33 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
   const [inviteResult, setInviteResult] = useState<{ email: string; password: string } | null>(null);
+  // Payment provider switch state
+  const [activeProvider, setActiveProvider] = useState((merchant.payment_provider as string) || 'clover');
+  const [switchingProvider, setSwitchingProvider] = useState(false);
+  const cloverConnected = Boolean(merchant.clover_access_token);
+  const valorConnected = Boolean(merchant.valor_app_id);
+
+  const handleSwitchProvider = async (provider: string) => {
+    if (provider === activeProvider) return;
+    setSwitchingProvider(true);
+    try {
+      const res = await fetch('/api/merchants/switch-provider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mid: m.mid, payment_provider: provider }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setActiveProvider(provider);
+      } else {
+        alert(data.error || 'Failed to switch provider');
+      }
+    } catch {
+      alert('Network error');
+    }
+    setSwitchingProvider(false);
+  };
+
   // Valor connection state
   const [valorAppId, setValorAppId] = useState('');
   const [valorAppKey, setValorAppKey] = useState('');
@@ -323,13 +350,41 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   <p className="text-gray-300 mt-0.5">Not set</p>
                 )}
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Payment Provider</p>
-                <p className="font-medium text-gray-700 mt-0.5 capitalize">{(m.payment_provider as string) || 'clover'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">Clover Token</p>
-                <p className="font-medium text-gray-700 mt-0.5">{m.clover_access_token ? 'Configured' : 'Not connected'}</p>
+              <div className="md:col-span-2">
+                <p className="text-xs text-gray-400 mb-1.5">Active Payment Provider</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleSwitchProvider('clover')}
+                    disabled={switchingProvider || !cloverConnected}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      activeProvider === 'clover'
+                        ? 'bg-green-100 text-green-800 ring-2 ring-green-400'
+                        : cloverConnected
+                          ? 'bg-gray-100 text-gray-500 hover:bg-gray-200 cursor-pointer'
+                          : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${activeProvider === 'clover' ? 'bg-green-500' : cloverConnected ? 'bg-gray-300' : 'bg-gray-200'}`} />
+                    Clover
+                    {!cloverConnected && <span className="text-[10px] font-normal">(not connected)</span>}
+                  </button>
+                  <button
+                    onClick={() => handleSwitchProvider('valor')}
+                    disabled={switchingProvider || !valorConnected}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      activeProvider === 'valor'
+                        ? 'bg-amber-100 text-amber-800 ring-2 ring-amber-400'
+                        : valorConnected
+                          ? 'bg-gray-100 text-gray-500 hover:bg-gray-200 cursor-pointer'
+                          : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${activeProvider === 'valor' ? 'bg-amber-500' : valorConnected ? 'bg-gray-300' : 'bg-gray-200'}`} />
+                    Valor
+                    {!valorConnected && <span className="text-[10px] font-normal">(not connected)</span>}
+                  </button>
+                  {switchingProvider && <span className="text-xs text-gray-400">Switching...</span>}
+                </div>
               </div>
               <div>
                 <p className="text-xs text-gray-400">Webhook</p>
