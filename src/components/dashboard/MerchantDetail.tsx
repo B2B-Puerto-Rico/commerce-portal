@@ -24,7 +24,7 @@ interface Props {
   modifiers: Record<string, unknown>[];
 }
 
-type Tab = 'overview' | 'connect' | 'products' | 'menu' | 'orders' | 'sync' | 'settings';
+type Tab = 'overview' | 'connect' | 'connect-valor' | 'products' | 'menu' | 'orders' | 'sync' | 'settings';
 
 export function MerchantDetail({ merchant, products, orders, syncRuns, categories, modifierGroups, modifiers }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
@@ -41,6 +41,17 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
   const [inviteResult, setInviteResult] = useState<{ email: string; password: string } | null>(null);
+  // Valor connection state
+  const [valorAppId, setValorAppId] = useState('');
+  const [valorAppKey, setValorAppKey] = useState('');
+  const [valorEpi, setValorEpi] = useState('');
+  const [valorEnv, setValorEnv] = useState('staging');
+  const [valorCheckoutMode, setValorCheckoutMode] = useState('passage');
+  const [valorSurchargeEnabled, setValorSurchargeEnabled] = useState(false);
+  const [valorSurchargeRate, setValorSurchargeRate] = useState('');
+  const [valorConnecting, setValorConnecting] = useState(false);
+  const [valorConnectMsg, setValorConnectMsg] = useState('');
+  const [valorWebhookUrl, setValorWebhookUrl] = useState('');
   const router = useRouter();
 
   const handleInvite = async () => {
@@ -123,6 +134,42 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
     setConnecting(false);
   };
 
+  const handleConnectValor = async () => {
+    setValorConnecting(true);
+    setValorConnectMsg('');
+    try {
+      const res = await fetch('/api/merchants/connect-valor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mid: m.mid,
+          app_id: valorAppId,
+          app_key: valorAppKey,
+          epi: valorEpi,
+          environment: valorEnv,
+          checkout_mode: valorCheckoutMode,
+          surcharge_enabled: valorSurchargeEnabled,
+          surcharge_rate: valorSurchargeEnabled ? parseInt(valorSurchargeRate, 10) || 0 : 0,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setValorConnectMsg('Valor connected successfully!');
+        if (data.webhook_url) {
+          setValorWebhookUrl(data.webhook_url);
+        }
+        setValorAppId('');
+        setValorAppKey('');
+        setValorEpi('');
+      } else {
+        setValorConnectMsg(`Error: ${data.error}`);
+      }
+    } catch {
+      setValorConnectMsg('Network error. Please try again.');
+    }
+    setValorConnecting(false);
+  };
+
   const handleSync = async () => {
     setSyncing(true);
     setSyncMsg('Syncing... this may take a minute for large menus.');
@@ -147,6 +194,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'connect', label: 'Connect Clover' },
+    { id: 'connect-valor', label: 'Connect Valor' },
     { id: 'products', label: 'Products', count: products.length },
     { id: 'menu', label: 'Menu Builder' },
     { id: 'orders', label: 'Orders', count: orders.length },
@@ -274,6 +322,10 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                 ) : (
                   <p className="text-gray-300 mt-0.5">Not set</p>
                 )}
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Payment Provider</p>
+                <p className="font-medium text-gray-700 mt-0.5 capitalize">{(m.payment_provider as string) || 'clover'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400">Clover Token</p>
@@ -448,6 +500,160 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
               <li>Select your app → API Tokens</li>
               <li>Create a test API token for this merchant</li>
               <li>Copy and paste it above</li>
+            </ol>
+          </div>
+        </div>
+      )}
+
+      {/* ================================================================= */}
+      {/* Connect Valor tab */}
+      {/* ================================================================= */}
+      {tab === 'connect-valor' && (
+        <div className="max-w-lg space-y-6">
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <h3 className="font-semibold text-sm text-gray-900 mb-1">Connect Valor PayTech</h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Enter the Valor API credentials for this merchant. All credentials are encrypted at rest using Supabase Vault.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  APP ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={valorAppId}
+                  onChange={(e) => setValorAppId(e.target.value)}
+                  placeholder="32-character APP ID"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  APP KEY <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={valorAppKey}
+                  onChange={(e) => setValorAppKey(e.target.value)}
+                  placeholder="32-character EPI-scoped APP KEY"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Must match the EPI below. Get it from Valor Portal → Virtual Terminal → Manage → API Keys.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  EPI <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={valorEpi}
+                  onChange={(e) => setValorEpi(e.target.value)}
+                  placeholder="10-digit EPI (starts with 2)"
+                  maxLength={10}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Environment</label>
+                  <select
+                    value={valorEnv}
+                    onChange={(e) => setValorEnv(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                  >
+                    <option value="staging">Staging</option>
+                    <option value="production">Production</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Checkout Mode</label>
+                  <select
+                    value={valorCheckoutMode}
+                    onChange={(e) => setValorCheckoutMode(e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                  >
+                    <option value="passage">Inline (Passage.js)</option>
+                    <option value="hosted_page">Redirect (Hosted Page)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Surcharge settings */}
+              <div className="border-t pt-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={valorSurchargeEnabled}
+                    onChange={(e) => setValorSurchargeEnabled(e.target.checked)}
+                    className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                  />
+                  Enable surcharge
+                </label>
+                {valorSurchargeEnabled && (
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Surcharge Rate (basis points)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={valorSurchargeRate}
+                        onChange={(e) => setValorSurchargeRate(e.target.value)}
+                        placeholder="350"
+                        min={0}
+                        max={500}
+                        className="w-32 border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      />
+                      <span className="text-xs text-gray-400">
+                        {valorSurchargeRate ? `= ${(parseInt(valorSurchargeRate, 10) / 100).toFixed(2)}%` : '350 = 3.50%'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {valorConnectMsg && (
+                <p className={`text-sm p-3 rounded-lg ${valorConnectMsg.includes('success') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                  {valorConnectMsg}
+                </p>
+              )}
+
+              {valorWebhookUrl && (
+                <div className="bg-blue-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-sm text-blue-900 mb-1">Webhook URL</h4>
+                  <p className="text-xs text-blue-800 mb-2">
+                    Configure this URL in the Valor Portal under Settings → Webhook:
+                  </p>
+                  <code className="block bg-white border border-blue-200 rounded-lg px-3 py-2 text-xs font-mono text-blue-900 break-all">
+                    {typeof window !== 'undefined' ? `${window.location.origin}${valorWebhookUrl}` : valorWebhookUrl}
+                  </code>
+                </div>
+              )}
+
+              <button
+                onClick={handleConnectValor}
+                disabled={valorConnecting || !valorAppId || !valorAppKey || !valorEpi}
+                className="w-full bg-gray-900 text-white py-3 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+              >
+                {valorConnecting ? 'Connecting...' : 'Save & Connect Valor'}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 rounded-xl p-4">
+            <h4 className="font-semibold text-sm text-amber-900">How to get your Valor credentials:</h4>
+            <ol className="mt-2 text-xs text-amber-800 space-y-1 list-decimal ml-4">
+              <li>Log in to the Valor Portal (Virtual Terminal)</li>
+              <li>Go to Manage → API Keys</li>
+              <li>Copy the APP ID, APP KEY, and EPI</li>
+              <li>The APP KEY is scoped to a specific EPI — make sure they match</li>
             </ol>
           </div>
         </div>
