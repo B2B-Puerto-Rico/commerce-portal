@@ -93,22 +93,42 @@ export async function POST(request: Request) {
     const orderTaxCents = order.tax_cents as number;
     const orderCreatedAt = new Date(order.created_at as string).getTime();
 
-    // Only match by EXACT amount — multiple strategies for how amounts map
+    // Match strategies — from exact to fuzzy
     let match = null;
 
-    // 1: txamount (total incl surcharge) = our total_cents
+    // 1: txamount (total incl surcharge) = our total_cents (exact)
     match = available.find((t) => (t.txamount as number) === orderTotalCents);
 
-    // 2: amount (base) = our subtotal_cents
+    // 2: amount (base) = our subtotal_cents (exact)
     if (!match) match = available.find((t) => (t.amount as number) === orderSubtotalCents);
 
     // 3: amount = subtotal + tax
     if (!match) match = available.find((t) => (t.amount as number) === (orderSubtotalCents + orderTaxCents));
 
-    // 4: txamount = subtotal + tax (if our total included surcharge but Valor didn't apply it)
+    // 4: txamount = subtotal + tax
     if (!match) match = available.find((t) => (t.txamount as number) === (orderSubtotalCents + orderTaxCents));
 
-    // NO Strategy 5 — we don't guess. If amounts don't match, say so with debug info.
+    // 5: Fuzzy — surcharge rate mismatch tolerance (our rate vs Valor's rate can differ)
+    // Match if base amount matches and total is within 10% surcharge tolerance
+    if (!match) {
+      const baseTarget = orderSubtotalCents + orderTaxCents;
+      match = available.find((t) => {
+        const base = t.amount as number;
+        const total = t.txamount as number;
+        // Base amount within 2 cents (rounding) AND total within 10% of our total
+        return Math.abs(base - baseTarget) <= 2 && Math.abs(total - orderTotalCents) <= Math.max(orderTotalCents * 0.1, 20);
+      }) || null;
+    }
+
+    // 6: Closest recent match — if only ONE unmatched txn was created after this order, it's likely ours
+    if (!match) {
+      const afterOrder = available.filter((t) =>
+        new Date(t.created_at as string).getTime() >= orderCreatedAt - 60000
+      );
+      if (afterOrder.length === 1) {
+        match = afterOrder[0];
+      }
+    }
 
     if (!match) {
       return NextResponse.json({
