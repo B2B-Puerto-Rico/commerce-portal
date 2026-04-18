@@ -59,8 +59,10 @@ export async function POST(request: Request) {
     .eq('mid', mid)
     .single();
 
+  // Webhook lives on the CART app, not the portal
+  const cartDomain = process.env.CART_WEBHOOK_DOMAIN || 'https://commerce-cart.b2bweb.app';
   const webhookUrl = merchant?.valor_webhook_secret
-    ? `/api/webhook/valor/${merchant.valor_webhook_secret}`
+    ? `${cartDomain}/api/webhook/valor/${merchant.valor_webhook_secret}`
     : null;
 
   return NextResponse.json({ success: true, webhook_url: webhookUrl });
