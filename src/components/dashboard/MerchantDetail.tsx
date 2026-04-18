@@ -632,7 +632,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                     Configure this URL in the Valor Portal under Settings → Webhook:
                   </p>
                   <code className="block bg-white border border-blue-200 rounded-lg px-3 py-2 text-xs font-mono text-blue-900 break-all">
-                    {typeof window !== 'undefined' ? `${window.location.origin}${valorWebhookUrl}` : valorWebhookUrl}
+                    {valorWebhookUrl}
                   </code>
                 </div>
               )}
