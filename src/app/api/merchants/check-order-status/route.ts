@@ -93,34 +93,32 @@ export async function POST(request: Request) {
     const orderTaxCents = order.tax_cents as number;
     const orderCreatedAt = new Date(order.created_at as string).getTime();
 
-    // Match strategies — from exact to fuzzy
+    // Match strategies:
+    // Our total_cents = subtotal + tax (no surcharge — Valor adds that on their page)
+    // Valor's `amount` = base amount we sent (should equal our total_cents)
+    // Valor's `txamount` = amount + surcharge (what customer actually paid)
     let match = null;
 
-    // 1: txamount (total incl surcharge) = our total_cents (exact)
-    match = available.find((t) => (t.txamount as number) === orderTotalCents);
+    // 1: Valor amount (base) = our total_cents (primary match — should always work for new orders)
+    match = available.find((t) => (t.amount as number) === orderTotalCents);
 
-    // 2: amount (base) = our subtotal_cents (exact)
+    // 2: Valor txamount (total with surcharge) = our total_cents (for old orders where we included surcharge)
+    if (!match) match = available.find((t) => (t.txamount as number) === orderTotalCents);
+
+    // 3: Valor amount = our subtotal (for orders where tax was passed separately)
     if (!match) match = available.find((t) => (t.amount as number) === orderSubtotalCents);
 
-    // 3: amount = subtotal + tax
-    if (!match) match = available.find((t) => (t.amount as number) === (orderSubtotalCents + orderTaxCents));
-
-    // 4: txamount = subtotal + tax
-    if (!match) match = available.find((t) => (t.txamount as number) === (orderSubtotalCents + orderTaxCents));
-
-    // 5: Fuzzy — surcharge rate mismatch tolerance (our rate vs Valor's rate can differ)
-    // Match if base amount matches and total is within 10% surcharge tolerance
+    // 4: Fuzzy — within 5% tolerance for surcharge rounding differences on older orders
     if (!match) {
-      const baseTarget = orderSubtotalCents + orderTaxCents;
       match = available.find((t) => {
-        const base = t.amount as number;
-        const total = t.txamount as number;
-        // Base amount within 2 cents (rounding) AND total within 10% of our total
-        return Math.abs(base - baseTarget) <= 2 && Math.abs(total - orderTotalCents) <= Math.max(orderTotalCents * 0.1, 20);
+        const amt = t.amount as number;
+        const txamt = t.txamount as number;
+        return Math.abs(amt - orderTotalCents) <= Math.max(orderTotalCents * 0.05, 10) ||
+               Math.abs(txamt - orderTotalCents) <= Math.max(orderTotalCents * 0.05, 10);
       }) || null;
     }
 
-    // 6: Closest recent match — if only ONE unmatched txn was created after this order, it's likely ours
+    // 5: Single unmatched transaction after order — only if just one candidate
     if (!match) {
       const afterOrder = available.filter((t) =>
         new Date(t.created_at as string).getTime() >= orderCreatedAt - 60000
