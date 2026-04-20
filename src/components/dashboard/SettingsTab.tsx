@@ -30,6 +30,8 @@ export function SettingsTab({
   const [primaryColor, setPrimaryColor] = useState(theme.primaryColor || '#000000');
   const [buttonText, setButtonText] = useState(theme.buttonText || 'Order');
   const [tier, setTier] = useState((m.cart_tier as string) || 'free');
+  const [pizzeriaMode, setPizzeriaMode] = useState((theme as Record<string, unknown>).pizzeria_mode === true);
+  const [pizzaCategoryName, setPizzaCategoryName] = useState(((theme as Record<string, unknown>).pizza_category_name as string) || 'Pizzas');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deploying, setDeploying] = useState(false);
@@ -46,7 +48,13 @@ export function SettingsTab({
         site_url: siteUrl || null,
         github_repo: githubRepo || null,
         cart_tier: tier,
-        theme: { primaryColor, buttonText, bannerUrl: bannerUrlState || undefined },
+        theme: {
+          primaryColor,
+          buttonText,
+          bannerUrl: bannerUrlState || undefined,
+          pizzeria_mode: pizzeriaMode,
+          pizza_category_name: pizzeriaMode ? pizzaCategoryName : undefined,
+        },
       }),
     });
     if (res.ok) {
@@ -187,6 +195,44 @@ export function SettingsTab({
             />
           </div>
         </div>
+      </div>
+
+      {/* Pizzeria Mode */}
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="font-semibold text-sm text-gray-900 flex items-center gap-2">
+            <span className="text-lg">🍕</span>
+            Pizzeria Mode
+          </h3>
+          <button
+            onClick={() => setPizzeriaMode(!pizzeriaMode)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              pizzeriaMode ? 'bg-orange-500' : 'bg-gray-300'
+            }`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              pizzeriaMode ? 'translate-x-6' : 'translate-x-1'
+            }`} />
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 mb-3">
+          Activates a visual pizza builder for pizza products — customers can pick size, crust, sauce, toppings with half-pizza support.
+        </p>
+        {pizzeriaMode && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Pizza Category Name</label>
+            <input
+              type="text"
+              value={pizzaCategoryName}
+              onChange={(e) => setPizzaCategoryName(e.target.value)}
+              placeholder="Pizzas"
+              className="w-48 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Products in this category will open the pizza builder instead of the regular product detail.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Save button */}
