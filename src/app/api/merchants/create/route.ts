@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   const supabase = createServiceClient();
   const body = await request.json();
 
-  const { mid, business_name, region, environment } = body;
+  const { mid, business_name, region, environment, company } = body;
 
   if (!mid || !business_name) {
     return NextResponse.json(
@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     business_name,
     region: region || 'na',
     environment: environment || 'production',
+    company: company || 'b2b',
   });
 
   if (error) {

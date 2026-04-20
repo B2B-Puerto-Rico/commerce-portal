@@ -8,7 +8,7 @@ export default async function MerchantsPage() {
 
   const { data: merchants } = await supabase
     .from('merchants')
-    .select('mid, business_name, cart_enabled, cart_tier, region, environment, last_full_sync_at, site_url, created_at')
+    .select('mid, business_name, cart_enabled, cart_tier, region, environment, last_full_sync_at, site_url, created_at, company')
     .order('created_at', { ascending: false });
 
   // Get order counts per merchant
@@ -67,14 +67,28 @@ export default async function MerchantsPage() {
                   <td className="px-5 py-4">
                     <a
                       href={`/dashboard/merchants/${m.mid}`}
-                      className="group"
+                      className="group flex items-center gap-3"
                     >
-                      <span className="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors">
-                        {m.business_name}
-                      </span>
-                      <span className="block text-xs text-gray-400 font-mono mt-0.5">
-                        {m.mid}
-                      </span>
+                      <div className="w-9 h-9 rounded-lg bg-white shadow-sm border border-gray-100 p-1.5 flex-shrink-0">
+                        <img
+                          src={(m.company as string) === 'slice' ? '/slice-logo.png' : '/b2b-logo.png'}
+                          alt=""
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div>
+                        <span className="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                          {m.business_name}
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                            (m.company as string) === 'slice' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
+                          }`}>
+                            {(m.company as string) === 'slice' ? 'Slice' : 'B2B'}
+                          </span>
+                        </span>
+                        <span className="block text-xs text-gray-400 font-mono mt-0.5">
+                          {m.mid}
+                        </span>
+                      </div>
                     </a>
                   </td>
                   <td className="px-5 py-4">
