@@ -26,6 +26,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
   }
 
+  // For theme updates, merge with existing theme to preserve synced fields like businessHours
+  if (safeUpdates.theme) {
+    const { data: existing } = await supabase
+      .from('merchants')
+      .select('theme')
+      .eq('mid', mid)
+      .single();
+
+    const existingTheme = (existing?.theme as Record<string, unknown>) || {};
+    safeUpdates.theme = { ...existingTheme, ...(safeUpdates.theme as Record<string, unknown>) };
+  }
+
   const { error } = await supabase
     .from('merchants')
     .update(safeUpdates)
