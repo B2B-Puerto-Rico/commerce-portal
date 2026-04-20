@@ -190,24 +190,45 @@ export async function POST(request: Request) {
       }[];
 
       if (items.length > 0) {
-        const rows = items.map((item) => ({
-          mid,
-          clover_item_id: item.id,
-          name: item.name,
-          price_cents: item.price ?? 0,
-          price_type: item.priceType ?? 'FIXED',
-          sku: item.sku ?? null,
-          code: item.code ?? null,
-          category_ids: (item.categories?.elements || []).map((c) => c.id),
-          modifier_group_ids: (item.modifierGroups?.elements || []).map((mg) => mg.id),
-          tax_rate_ids: (item.taxRates?.elements || []).map((tr) => tr.id),
-          default_tax_rates: item.defaultTaxRates ?? true,
-          in_stock: item.available ?? true,
-          stock_count: item.itemStock?.stockCount ?? null,
-          hidden_in_clover: item.hidden ?? false,
-          display_order: 0,
-          last_synced_at: new Date().toISOString(),
-        }));
+        // Fetch existing products to preserve manually-added modifier_group_ids
+        const { data: existingProducts } = await supabase
+          .from('products')
+          .select('clover_item_id, modifier_group_ids')
+          .eq('mid', mid);
+
+        const existingMap = new Map<string, string[]>();
+        for (const p of existingProducts || []) {
+          existingMap.set(p.clover_item_id, p.modifier_group_ids || []);
+        }
+
+        const rows = items.map((item) => {
+          const cloverGroupIds = (item.modifierGroups?.elements || []).map((mg) => mg.id);
+          const existingGroupIds = existingMap.get(item.id) || [];
+
+          // Merge: keep any manually-added groups that aren't from Clover
+          // (groups that exist in Supabase but not in Clover's response)
+          const manuallyAdded = existingGroupIds.filter((gid) => !cloverGroupIds.includes(gid));
+          const mergedGroupIds = Array.from(new Set([...cloverGroupIds, ...manuallyAdded]));
+
+          return {
+            mid,
+            clover_item_id: item.id,
+            name: item.name,
+            price_cents: item.price ?? 0,
+            price_type: item.priceType ?? 'FIXED',
+            sku: item.sku ?? null,
+            code: item.code ?? null,
+            category_ids: (item.categories?.elements || []).map((c) => c.id),
+            modifier_group_ids: mergedGroupIds,
+            tax_rate_ids: (item.taxRates?.elements || []).map((tr) => tr.id),
+            default_tax_rates: item.defaultTaxRates ?? true,
+            in_stock: item.available ?? true,
+            stock_count: item.itemStock?.stockCount ?? null,
+            hidden_in_clover: item.hidden ?? false,
+            display_order: existingMap.has(item.id) ? undefined : 0, // preserve existing display_order
+            last_synced_at: new Date().toISOString(),
+          };
+        });
 
         // Batch upsert (500 at a time)
         for (let i = 0; i < rows.length; i += 500) {
