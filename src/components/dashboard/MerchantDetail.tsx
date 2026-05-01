@@ -28,7 +28,19 @@ interface Props {
 type Tab = 'overview' | 'connect' | 'connect-valor' | 'products' | 'menu' | 'orders' | 'drivers' | 'sync' | 'settings';
 
 export function MerchantDetail({ merchant, products, orders, syncRuns, categories, modifierGroups, modifiers }: Props) {
-  const [tab, setTab] = useState<Tab>('overview');
+  const validTabs: Tab[] = ['overview', 'connect', 'connect-valor', 'products', 'menu', 'orders', 'drivers', 'sync', 'settings'];
+  const initialTab = (() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '') as Tab;
+      if (validTabs.includes(hash)) return hash;
+    }
+    return 'overview' as Tab;
+  })();
+  const [tab, setTabState] = useState<Tab>(initialTab);
+  const setTab = (t: Tab) => {
+    setTabState(t);
+    window.location.hash = t;
+  };
   const [accessToken, setAccessToken] = useState('');
   const [ecommerceSk, setEcommerceSk] = useState('');
   const [connecting, setConnecting] = useState(false);
