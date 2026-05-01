@@ -57,7 +57,7 @@ function BottomNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-glass-border safe-area-bottom">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-glass-surface border-t border-glass-border safe-area-bottom">
       <div className="flex items-center justify-around px-2 py-1">
         {items.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -65,12 +65,12 @@ function BottomNav({ items }: { items: NavItem[] }) {
             <a
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-0.5 py-2 px-4 rounded-xl transition-colors ${
-                isActive ? 'text-glass-primary' : 'text-gray-400'
+              className={`flex flex-col items-center gap-0.5 py-2 px-4 rounded-[10px] transition-colors ${
+                isActive ? 'text-cobalt' : 'text-gray-400'
               }`}
             >
               {isActive ? item.activeIcon : item.icon}
-              <span className={`text-[10px] font-semibold ${isActive ? 'text-glass-primary' : 'text-gray-400'}`}>
+              <span className={`text-[10px] font-semibold ${isActive ? 'text-cobalt' : 'text-gray-400'}`}>
                 {item.label}
               </span>
             </a>
