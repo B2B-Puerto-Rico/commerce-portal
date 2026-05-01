@@ -374,11 +374,16 @@ export async function POST(request: Request) {
 }
 
 function getCloverEndpoints(region: string, environment: string) {
-  const map: Record<string, Record<string, { api: string }>> = {
-    na: {
-      sandbox: { api: 'https://apisandbox.dev.clover.com' },
-      production: { api: 'https://api.clover.com' },
-    },
+  // Region 'pr' and 'us' both use NA Clover endpoints
+  const envMap: Record<string, { api: string }> = {
+    sandbox: { api: 'https://apisandbox.dev.clover.com' },
+    production: { api: 'https://api.clover.com' },
+  };
+
+  const regionMap: Record<string, Record<string, { api: string }>> = {
+    na: envMap,
+    pr: envMap, // Puerto Rico uses NA endpoints
+    us: envMap, // USA uses NA endpoints
     eu: {
       sandbox: { api: 'https://api.eu.clover.com' },
       production: { api: 'https://api.eu.clover.com' },
@@ -388,5 +393,5 @@ function getCloverEndpoints(region: string, environment: string) {
       production: { api: 'https://scl.clover.com' },
     },
   };
-  return map[region || 'na']?.[environment || 'production'] || map.na.production;
+  return regionMap[region || 'na']?.[environment || 'production'] || envMap[environment || 'production'] || envMap.production;
 }
