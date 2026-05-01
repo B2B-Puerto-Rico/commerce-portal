@@ -63,9 +63,15 @@ export default async function MerchantPage({
     .select('*')
     .eq('mid', mid);
 
+  // Fetch drivers for assignment dropdown
+  const { data: drivers } = await supabase
+    .from('drivers')
+    .select('id, full_name, status')
+    .eq('mid', mid);
+
   return (
     <MerchantDetail
-      merchant={merchant}
+      merchant={{ ...merchant, _drivers: drivers || [] }}
       products={products || []}
       orders={orders || []}
       syncRuns={syncRuns || []}
