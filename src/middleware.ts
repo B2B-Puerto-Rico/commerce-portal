@@ -38,6 +38,10 @@ export async function middleware(request: NextRequest) {
   // Allow API routes through
   if (isApiRoute) return supabaseResponse;
 
+  // Allow public delivery status pages (drivers don't need to log in)
+  const isDeliveryPage = pathname.startsWith('/delivery');
+  if (isDeliveryPage) return supabaseResponse;
+
   // Not logged in → go to login
   if (!user && !isLoginPage) {
     return NextResponse.redirect(new URL('/login', request.url));
