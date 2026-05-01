@@ -10,6 +10,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        cobalt: {
+          DEFAULT: '#2C5EF5',
+          50: '#EEF2FF',
+          100: '#DBE4FE',
+          500: '#2C5EF5',
+          600: '#2452CC',
+          700: '#1D44A3',
+        },
+        glass: {
+          primary: '#0F1419',
+          secondary: '#4A5568',
+          neutral: '#F1F3F5',
+          surface: '#FFFFFF',
+          border: '#E2E5E9',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

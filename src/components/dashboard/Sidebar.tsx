@@ -27,18 +27,19 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:w-[240px] md:flex-col md:fixed md:inset-y-0 bg-white border-r border-gray-100">
+    <aside className="hidden md:flex md:w-[240px] md:flex-col md:fixed md:inset-y-0 bg-[#0F1419]">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-gray-50">
+      <div className="flex items-center gap-3 px-5 h-16 border-b border-white/[0.06]">
         <img src="/logo.png" alt="" className="w-8 h-8 rounded-lg flex-shrink-0" />
         <div>
-          <span className="font-bold text-sm text-gray-900">Commerce</span>
-          <span className="text-xs text-gray-400 block -mt-0.5">Admin Portal</span>
+          <span className="font-bold text-sm text-white">Commerce</span>
+          <span className="text-[11px] text-white/40 block -mt-0.5">Admin Portal</span>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-5 space-y-1">
+        <p className="px-3 mb-2 text-[10px] font-semibold text-white/30 uppercase tracking-widest">Navigation</p>
         {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/');
@@ -46,13 +47,13 @@ export function Sidebar() {
             <a
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? 'bg-gray-900 text-white'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-cobalt/10 text-cobalt border-l-2 border-cobalt ml-0'
+                  : 'text-white/50 hover:bg-white/[0.04] hover:text-white/80'
               }`}
             >
-              <span className={isActive ? 'text-white' : 'text-gray-400'}>{item.icon}</span>
+              <span className={isActive ? 'text-cobalt' : 'text-white/30'}>{item.icon}</span>
               {item.label}
             </a>
           );
@@ -60,9 +61,9 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-gray-50">
-        <p className="text-[10px] text-gray-300 font-medium uppercase tracking-wider">
-          B2B PR AI
+      <div className="px-5 py-4 border-t border-white/[0.06]">
+        <p className="text-[10px] text-white/20 font-medium uppercase tracking-widest">
+          B2B Commerce Platform
         </p>
       </div>
     </aside>

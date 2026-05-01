@@ -27,8 +27,8 @@ export default async function MerchantsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Merchants</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-semibold text-glass-primary tracking-tight">Merchants</h1>
+          <p className="text-sm text-glass-secondary mt-1">
             {merchants?.length || 0} merchant{(merchants?.length || 0) !== 1 ? 's' : ''} connected
           </p>
         </div>
@@ -36,7 +36,7 @@ export default async function MerchantsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

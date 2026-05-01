@@ -303,7 +303,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             onClick={() => setTab(t.id)}
             className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${
               tab === t.id
-                ? 'border-gray-900 text-gray-900'
+                ? 'border-cobalt text-cobalt'
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}
           >
@@ -320,17 +320,17 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       {/* ================================================================= */}
       {tab === 'overview' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
+          <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Products</p>
             <p className="text-3xl font-bold text-gray-900 mt-2">{products.length}</p>
             <p className="text-xs text-gray-400 mt-1">{products.filter((p) => !(p.hidden_online as boolean)).length} visible in cart</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
+          <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Orders (30d)</p>
             <p className="text-3xl font-bold text-gray-900 mt-2">{orders.length}</p>
             <p className="text-xs text-gray-400 mt-1">{orders.filter((o) => o.status === 'paid').length} paid</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
+          <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Last Sync</p>
             <p className="text-lg font-bold text-gray-900 mt-2">
               {m.last_full_sync_at ? formatDate(m.last_full_sync_at as string) : 'Never'}
@@ -339,7 +339,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
           </div>
 
           {/* Connection info */}
-          <div className="md:col-span-3 bg-white rounded-xl border border-gray-100 p-5">
+          <div className="md:col-span-3 bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <h3 className="font-semibold text-sm text-gray-900 mb-3">Connection details</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
@@ -414,7 +414,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
               </div>
             </div>
           {/* Business Hours */}
-          <div className="md:col-span-3 bg-white rounded-xl border border-gray-100 p-5">
+          <div className="md:col-span-3 bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <h3 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
               <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -488,7 +488,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+              className="bg-cobalt text-white px-5 py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-gray-300 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
             >
               {syncing ? 'Syncing...' : 'Sync Now'}
             </button>
@@ -507,7 +507,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       {/* ================================================================= */}
       {tab === 'connect' && (
         <div className="max-w-lg space-y-6">
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
+          <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <h3 className="font-semibold text-sm text-gray-900 mb-1">Connect Clover Account</h3>
             <p className="text-xs text-gray-400 mb-4">
               Paste the Clover API credentials for this merchant. Tokens are encrypted at rest using Supabase Vault.
@@ -555,7 +555,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
               <button
                 onClick={handleConnect}
                 disabled={connecting || !accessToken}
-                className="w-full bg-gray-900 text-white py-3 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+                className="w-full bg-cobalt text-white py-3 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
               >
                 {connecting ? 'Connecting...' : 'Save & Connect'}
               </button>
@@ -579,7 +579,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       {/* ================================================================= */}
       {tab === 'connect-valor' && (
         <div className="max-w-lg space-y-6">
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
+          <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <h3 className="font-semibold text-sm text-gray-900 mb-1">Connect Valor PayTech</h3>
             <p className="text-xs text-gray-400 mb-4">
               Enter the Valor API credentials for this merchant. All credentials are encrypted at rest using Supabase Vault.
@@ -709,7 +709,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
               <button
                 onClick={handleConnectValor}
                 disabled={valorConnecting || !valorAppId || !valorAppKey || !valorEpi}
-                className="w-full bg-gray-900 text-white py-3 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+                className="w-full bg-cobalt text-white py-3 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
               >
                 {valorConnecting ? 'Connecting...' : 'Save & Connect Valor'}
               </button>

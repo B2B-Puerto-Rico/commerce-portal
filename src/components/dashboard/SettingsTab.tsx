@@ -72,7 +72,7 @@ export function SettingsTab({
   return (
     <div className="max-w-2xl space-y-6">
       {/* Merchant Details */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
         <h3 className="font-semibold text-sm text-gray-900 mb-4">Merchant Details</h3>
         <div className="space-y-4">
           <div>
@@ -111,7 +111,7 @@ export function SettingsTab({
       </div>
 
       {/* Banner Image */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
         <h3 className="font-semibold text-sm text-gray-900 mb-1">Store Banner</h3>
         <p className="text-xs text-gray-400 mb-3">This image appears at the top of your cart widget. Recommended: 1200x400px.</p>
         <div
@@ -150,7 +150,7 @@ export function SettingsTab({
       </div>
 
       {/* Cart Appearance */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
         <h3 className="font-semibold text-sm text-gray-900 mb-4">Cart Appearance</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -198,7 +198,7 @@ export function SettingsTab({
       </div>
 
       {/* Pizzeria Mode */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
         <div className="flex items-center justify-between mb-1">
           <h3 className="font-semibold text-sm text-gray-900 flex items-center gap-2">
             <span className="text-lg">🍕</span>
@@ -240,7 +240,7 @@ export function SettingsTab({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-300 active:scale-[0.98] transition-all"
+          className="bg-cobalt text-white px-6 py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-gray-300 active:scale-[0.98] transition-all"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
@@ -326,7 +326,7 @@ export function SettingsTab({
       )}
 
       {/* Embed Code */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-2">
           <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
@@ -369,7 +369,7 @@ export function SettingsTab({
       </div>
 
       {/* Invite Merchant */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
         <h3 className="font-semibold text-sm text-gray-900 mb-1">Invite Merchant</h3>
         <p className="text-xs text-gray-400 mb-4">Create a login for the merchant to manage their own cart.</p>
         {inviteResult ? (

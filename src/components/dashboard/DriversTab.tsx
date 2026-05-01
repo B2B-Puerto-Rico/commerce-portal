@@ -266,7 +266,7 @@ export function DriversTab({ mid }: { mid: string }) {
             <h3 className="font-semibold text-sm text-gray-900">Delivery Drivers</h3>
             <button
               onClick={() => { setEditingDriverId(null); setDriverForm({ full_name: '', email: '', phone: '', pay_type: 'per_delivery', pay_rate: '', zone_ids: [] }); setShowAddDriver(!showAddDriver); }}
-              className="bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-gray-800 active:scale-[0.98] transition-all"
+              className="bg-cobalt text-white px-4 py-2 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 active:scale-[0.98] transition-all"
             >
               + Add Driver
             </button>
@@ -280,7 +280,7 @@ export function DriversTab({ mid }: { mid: string }) {
 
           {/* Add driver form */}
           {showAddDriver && (
-            <form onSubmit={handleAddDriver} className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+            <form onSubmit={handleAddDriver} className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm p-5 space-y-4">
               <h4 className="font-semibold text-sm text-gray-900">{editingDriverId ? 'Edit Driver' : 'New Driver'}</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -336,7 +336,7 @@ export function DriversTab({ mid }: { mid: string }) {
               </div>
               <div className="flex gap-3">
                 <button type="submit" disabled={addingDriver}
-                  className="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-gray-800 disabled:bg-gray-300">
+                  className="bg-cobalt text-white px-5 py-2.5 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 disabled:bg-gray-300">
                   {addingDriver ? 'Saving...' : editingDriverId ? 'Update Driver' : 'Add Driver & Send Invite'}
                 </button>
                 <button type="button" onClick={() => setShowAddDriver(false)}
@@ -346,7 +346,7 @@ export function DriversTab({ mid }: { mid: string }) {
           )}
 
           {/* Driver list */}
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm overflow-hidden">
             {drivers.length === 0 ? (
               <div className="text-center py-12 text-gray-400 text-sm">No drivers yet. Add your first driver above.</div>
             ) : (
@@ -416,13 +416,13 @@ export function DriversTab({ mid }: { mid: string }) {
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm text-gray-900">Delivery Zones</h3>
             <button onClick={() => setShowAddZone(!showAddZone)}
-              className="bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-gray-800">
+              className="bg-cobalt text-white px-4 py-2 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600">
               + Add Zone
             </button>
           </div>
 
           {showAddZone && (
-            <form onSubmit={handleAddZone} className="bg-white rounded-xl border border-gray-100 p-5 space-y-3">
+            <form onSubmit={handleAddZone} className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm p-5 space-y-3">
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Zone Name *</label>
@@ -442,7 +442,7 @@ export function DriversTab({ mid }: { mid: string }) {
               </div>
               <div className="flex gap-3">
                 <button type="submit" disabled={addingZone}
-                  className="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-gray-800 disabled:bg-gray-300">
+                  className="bg-cobalt text-white px-5 py-2.5 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 disabled:bg-gray-300">
                   {addingZone ? 'Adding...' : 'Create Zone'}
                 </button>
                 <button type="button" onClick={() => setShowAddZone(false)} className="text-xs text-gray-400 hover:text-gray-600 px-3">Cancel</button>
@@ -454,7 +454,7 @@ export function DriversTab({ mid }: { mid: string }) {
             {zones.map((zone) => {
               const assignedDrivers = drivers.filter((d) => d.zone_ids.includes(zone.id));
               return (
-                <div key={zone.id} className="bg-white rounded-xl border border-gray-100 p-4">
+                <div key={zone.id} className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: zone.color }} />
@@ -495,7 +495,7 @@ export function DriversTab({ mid }: { mid: string }) {
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm text-gray-900">Driver Analytics</h3>
             <button onClick={loadStats} disabled={loadingStats}
-              className="bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-gray-800 disabled:bg-gray-300">
+              className="bg-cobalt text-white px-4 py-2 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 disabled:bg-gray-300">
               {loadingStats ? 'Loading...' : 'Load Analytics'}
             </button>
           </div>
@@ -508,7 +508,7 @@ export function DriversTab({ mid }: { mid: string }) {
             const isExpanded = selectedDriverStats === (ds.driver_id as string);
             const deliveries = (ds.deliveries as Record<string, unknown>[]) || [];
             return (
-              <div key={ds.driver_id as string} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+              <div key={ds.driver_id as string} className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm overflow-hidden">
                 {/* Driver summary card */}
                 <button onClick={() => setSelectedDriverStats(isExpanded ? null : (ds.driver_id as string))}
                   className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left">
@@ -588,7 +588,7 @@ export function DriversTab({ mid }: { mid: string }) {
 
       {view === 'settings' && (
         <div className="max-w-lg space-y-4">
-          <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+          <div className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-sm text-gray-900">Delivery Settings</h3>
               <button onClick={() => setConfigForm({ ...configForm, delivery_enabled: !configForm.delivery_enabled })}

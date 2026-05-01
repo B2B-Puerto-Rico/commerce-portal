@@ -4,26 +4,27 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    /* Glassline Design System */
+    --background: 210 11% 95%; /* #F1F3F5 */
+    --foreground: 210 28% 8%; /* #0F1419 */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 210 28% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    --popover-foreground: 210 28% 8%;
+    --primary: 224 90% 57%; /* #2C5EF5 cobalt */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 218 15% 35%; /* #4A5568 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 11% 95%;
+    --muted-foreground: 218 15% 35%;
+    --accent: 224 90% 57%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
+    --border: 213 10% 90%; /* #E2E5E9 */
+    --input: 213 10% 90%;
+    --ring: 224 90% 57%; /* cobalt focus ring */
+    --radius: 0.625rem; /* 10px Glassline md */
   }
 
   .dark {
