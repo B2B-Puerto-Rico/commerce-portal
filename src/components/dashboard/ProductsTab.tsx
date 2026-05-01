@@ -299,9 +299,9 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
               </div>
               <p className="text-xs text-gray-400">Changes sync to Clover POS in real-time.</p>
 
-              {/* Image upload */}
+              {/* Image upload — desktop only */}
               <div
-                className="relative border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-gray-400 transition-colors cursor-pointer"
+                className="hidden md:block relative border-2 border-dashed border-glass-border rounded-xl overflow-hidden hover:border-gray-400 transition-colors cursor-pointer"
                 onClick={() => document.getElementById('product-image-input')?.click()}
                 onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-blue-400', 'bg-blue-50/50'); }}
                 onDragLeave={(e) => { e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50/50'); }}
@@ -387,14 +387,14 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                 <div>
                   <label className="block text-xs font-medium text-glass-secondary mb-1">Name</label>
                   <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
-                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
+                    className="w-full border border-glass-border rounded-[10px] px-3 py-2.5 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-glass-secondary mb-1">Price ($)</label>
                   <input type="number" step="0.01" min="0" value={editPrice} onChange={(e) => setEditPrice(e.target.value)}
-                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
+                    className="w-full border border-glass-border rounded-[10px] px-3 py-2.5 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
-                <div>
+                <div className="hidden md:block">
                   <label className="block text-xs font-medium text-glass-secondary mb-1">Description</label>
                   <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={2}
                     className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
