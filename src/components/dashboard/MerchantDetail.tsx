@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SettingsTab } from './SettingsTab';
 import { ProductsTab } from './ProductsTab';
 import { MenuBuilder } from './MenuBuilder';
+import { DriversTab } from './DriversTab';
 
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -24,7 +25,7 @@ interface Props {
   modifiers: Record<string, unknown>[];
 }
 
-type Tab = 'overview' | 'connect' | 'connect-valor' | 'products' | 'menu' | 'orders' | 'sync' | 'settings';
+type Tab = 'overview' | 'connect' | 'connect-valor' | 'products' | 'menu' | 'orders' | 'drivers' | 'sync' | 'settings';
 
 export function MerchantDetail({ merchant, products, orders, syncRuns, categories, modifierGroups, modifiers }: Props) {
   const [tab, setTab] = useState<Tab>('overview');
@@ -225,6 +226,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
     { id: 'products', label: 'Products', count: products.length },
     { id: 'menu', label: 'Menu Builder' },
     { id: 'orders', label: 'Orders', count: orders.length },
+    { id: 'drivers', label: 'Delivery' },
     { id: 'sync', label: 'Sync History', count: syncRuns.length },
     { id: 'settings', label: 'Settings' },
   ];
@@ -881,6 +883,13 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
           </table>
         </div>
         </div>
+      )}
+
+      {/* ================================================================= */}
+      {/* Delivery / Drivers tab */}
+      {/* ================================================================= */}
+      {tab === 'drivers' && (
+        <DriversTab mid={m.mid as string} />
       )}
 
       {/* ================================================================= */}
