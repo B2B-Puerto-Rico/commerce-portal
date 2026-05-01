@@ -883,11 +883,45 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   </td>
                   <td className="px-5 py-3">
                     {(o.fulfillment_type as string) === 'delivery' ? (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                        (o.delivery_status as string) === 'delivered' ? 'bg-green-50 text-green-700' :
-                        (o.delivery_status as string) === 'assigned' ? 'bg-blue-50 text-blue-700' :
-                        'bg-gray-100 text-gray-500'
-                      }`}>{(o.delivery_status as string) || 'pending'}</span>
+                      <div className="space-y-1">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                          (o.delivery_status as string) === 'delivered' ? 'bg-green-50 text-green-700' :
+                          (o.delivery_status as string) === 'picked_up' ? 'bg-amber-50 text-amber-700' :
+                          (o.delivery_status as string) === 'assigned' ? 'bg-blue-50 text-blue-700' :
+                          'bg-gray-100 text-gray-500'
+                        }`}>{(o.delivery_status as string) || 'pending'}</span>
+                        {/* Driver assignment - show dropdown for unassigned delivery orders */}
+                        {(o.status as string) === 'paid' && !(o.assigned_driver_id as string) && (
+                          <select
+                            defaultValue=""
+                            onChange={async (e) => {
+                              const driverId = e.target.value;
+                              if (!driverId) return;
+                              const sel = e.target;
+                              sel.disabled = true;
+                              await fetch('/api/merchants/assign-driver', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ order_id: o.id, driver_id: driverId, mid: m.mid }),
+                              });
+                              router.refresh();
+                            }}
+                            className="block w-full mt-1 text-[10px] border border-blue-200 rounded-lg px-1.5 py-1 bg-blue-50 text-blue-700 font-semibold focus:outline-none cursor-pointer"
+                          >
+                            <option value="">Assign driver...</option>
+                            {(m._drivers as { id: string; full_name: string; status: string }[] || [])
+                              .filter((d) => d.status === 'active')
+                              .map((d) => (
+                                <option key={d.id} value={d.id}>{d.full_name}</option>
+                              ))}
+                          </select>
+                        )}
+                        {(o.assigned_driver_id as string) && (
+                          <p className="text-[10px] text-blue-600 font-medium">
+                            {((m._drivers as { id: string; full_name: string }[] || []).find((d) => d.id === o.assigned_driver_id) || {}).full_name || 'Driver assigned'}
+                          </p>
+                        )}
+                      </div>
                     ) : (
                       <span className="text-[10px] text-gray-400">Pickup</span>
                     )}
