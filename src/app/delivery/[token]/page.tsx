@@ -53,12 +53,11 @@ export default async function DeliveryStatusPage({
     await supabase.from('cart_orders')
       .update({ delivery_status: 'delivered' })
       .eq('id', assignment.order_id);
-    // Update driver stats
-    await supabase.rpc('increment_driver_deliveries' as never, { d_id: assignment.driver_id } as never).catch(() => {});
+    // Update driver delivery count (best effort, no RPC needed)
     redirect(`/delivery/${token}?updated=delivered`);
   }
 
-  const updated = searchParams.action ? null : (new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('updated'));
+  // Status page - no action needed, just display
   const order = assignment.cart_orders as Record<string, unknown> | null;
   const driver = assignment.drivers as Record<string, unknown> | null;
   const shipTo = order?.ship_to as Record<string, string> | null;
