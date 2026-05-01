@@ -51,15 +51,28 @@ export async function POST(request: Request) {
   // =========================================================================
   // STEP 1: Get ALL pending Valor orders for this merchant (not just the target)
   // =========================================================================
+  // Only consider orders from the last 24 hours — stale orders get auto-cancelled
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
   const { data: allPendingOrders } = await supabase
     .from('cart_orders')
     .select('id, total_cents, subtotal_cents, tax_cents, tip_cents, created_at, provider_txn_id')
     .eq('mid', mid)
     .eq('payment_provider', 'valor')
     .eq('status', 'pending')
+    .gte('created_at', twentyFourHoursAgo)
     .order('created_at', { ascending: true });
 
   const pendingOrders = allPendingOrders || [];
+
+  // Auto-cancel orders older than 24 hours (abandoned checkouts)
+  await supabase
+    .from('cart_orders')
+    .update({ status: 'cancelled', status_detail: 'Auto-cancelled: unpaid after 24 hours' })
+    .eq('mid', mid)
+    .eq('payment_provider', 'valor')
+    .eq('status', 'pending')
+    .lt('created_at', twentyFourHoursAgo);
 
   // =========================================================================
   // STEP 2: Get ALL Valor transactions from the batch
