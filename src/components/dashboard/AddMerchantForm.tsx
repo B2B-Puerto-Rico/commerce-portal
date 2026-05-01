@@ -48,7 +48,7 @@ export function AddMerchantForm() {
       body: JSON.stringify({
         mid,
         business_name: name,
-        region: 'na',
+        region: company === 'slice' ? 'us' : 'pr',
         environment,
         company: company || 'b2b',
       }),
@@ -348,6 +348,10 @@ export function AddMerchantForm() {
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">MID</span>
                       <span className="text-sm font-mono text-gray-700">{mid}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Region</span>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cobalt-50 text-cobalt">{company === 'slice' ? 'USA' : 'Puerto Rico'}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">Environment</span>
