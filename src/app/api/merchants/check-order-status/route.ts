@@ -93,39 +93,58 @@ export async function POST(request: Request) {
     const orderTaxCents = order.tax_cents as number;
     const orderCreatedAt = new Date(order.created_at as string).getTime();
 
-    // Match strategies:
-    // Our total_cents = subtotal + tax (no surcharge — Valor adds that on their page)
-    // Valor's `amount` = base amount we sent (should equal our total_cents)
-    // Valor's `txamount` = amount + surcharge (what customer actually paid)
+    // Match strategy: find the CLOSEST transaction by time that also matches by amount.
+    // This handles multiple orders with the same amount — each matches to its nearest txn.
+    //
+    // Amount matching: our total_cents should equal Valor's `amount` (base before surcharge)
+    // Time matching: the Valor txn closest to our order creation time is the best match
+
+    const findClosestByTime = (candidates: Record<string, unknown>[]) => {
+      if (candidates.length === 0) return null;
+      if (candidates.length === 1) return candidates[0];
+      // Sort by time proximity to order creation
+      return candidates.sort((a, b) => {
+        const aTime = Math.abs(new Date(a.created_at as string).getTime() - orderCreatedAt);
+        const bTime = Math.abs(new Date(b.created_at as string).getTime() - orderCreatedAt);
+        return aTime - bTime;
+      })[0];
+    }
+
     let match = null;
 
-    // 1: Valor amount (base) = our total_cents (primary match — should always work for new orders)
-    match = available.find((t) => (t.amount as number) === orderTotalCents);
+    // 1: Exact amount match (Valor base = our total), pick closest by time
+    const exactAmountMatches = available.filter((t) => (t.amount as number) === orderTotalCents);
+    match = findClosestByTime(exactAmountMatches);
 
-    // 2: Valor txamount (total with surcharge) = our total_cents (for old orders where we included surcharge)
-    if (!match) match = available.find((t) => (t.txamount as number) === orderTotalCents);
-
-    // 3: Valor amount = our subtotal (for orders where tax was passed separately)
-    if (!match) match = available.find((t) => (t.amount as number) === orderSubtotalCents);
-
-    // 4: Fuzzy — within 5% tolerance for surcharge rounding differences on older orders
+    // 2: Exact txamount match (for older orders)
     if (!match) {
-      match = available.find((t) => {
+      const txAmountMatches = available.filter((t) => (t.txamount as number) === orderTotalCents);
+      match = findClosestByTime(txAmountMatches);
+    }
+
+    // 3: Subtotal match
+    if (!match) {
+      const subtotalMatches = available.filter((t) => (t.amount as number) === orderSubtotalCents);
+      match = findClosestByTime(subtotalMatches);
+    }
+
+    // 4: Fuzzy amount + closest time
+    if (!match) {
+      const fuzzyMatches = available.filter((t) => {
         const amt = t.amount as number;
         const txamt = t.txamount as number;
         return Math.abs(amt - orderTotalCents) <= Math.max(orderTotalCents * 0.05, 10) ||
                Math.abs(txamt - orderTotalCents) <= Math.max(orderTotalCents * 0.05, 10);
-      }) || null;
+      });
+      match = findClosestByTime(fuzzyMatches);
     }
 
-    // 5: Single unmatched transaction after order — only if just one candidate
+    // 5: Any unmatched txn created after the order, closest by time
     if (!match) {
       const afterOrder = available.filter((t) =>
         new Date(t.created_at as string).getTime() >= orderCreatedAt - 60000
       );
-      if (afterOrder.length === 1) {
-        match = afterOrder[0];
-      }
+      match = findClosestByTime(afterOrder);
     }
 
     if (!match) {

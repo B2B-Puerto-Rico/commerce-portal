@@ -79,12 +79,34 @@ export function DriversTab({ mid }: { mid: string }) {
 
   async function loadAll() {
     setLoading(true);
-    const [driversRes, zonesRes, configRes] = await Promise.all([
+    const [driversRes, zonesRes, configRes, statsRes] = await Promise.all([
       fetch(`/api/merchants/drivers?mid=${mid}`),
       fetch(`/api/merchants/delivery-zones?mid=${mid}`),
       fetch(`/api/merchants/delivery-config?mid=${mid}`),
+      fetch(`/api/merchants/driver-stats?mid=${mid}`),
     ]);
-    setDrivers(await driversRes.json());
+    const driversData = await driversRes.json();
+    const statsData = await statsRes.json();
+
+    // Merge live stats into driver records
+    const statsMap = new Map<string, Record<string, unknown>>();
+    for (const ds of (statsData.drivers || []) as Record<string, unknown>[]) {
+      statsMap.set(ds.driver_id as string, ds);
+    }
+    const mergedDrivers = driversData.map((d: Driver) => {
+      const stats = statsMap.get(d.id);
+      if (stats) {
+        return {
+          ...d,
+          total_deliveries: (stats.completed_deliveries as number) || 0,
+          total_tips_cents: (stats.total_tips_cents as number) || 0,
+          avg_delivery_mins: (stats.avg_delivery_mins as number) || 0,
+        };
+      }
+      return d;
+    });
+    setDrivers(mergedDrivers);
+    setDriverStats(statsData.drivers || []);
     setZones(await zonesRes.json());
     const cfg = await configRes.json();
     setConfigForm({
