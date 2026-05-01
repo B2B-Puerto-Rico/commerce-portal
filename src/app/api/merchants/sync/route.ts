@@ -225,7 +225,7 @@ export async function POST(request: Request) {
             in_stock: item.available ?? true,
             stock_count: item.itemStock?.stockCount ?? null,
             hidden_in_clover: item.hidden ?? false,
-            display_order: existingMap.has(item.id) ? undefined : 0, // preserve existing display_order
+            display_order: 0,
             last_synced_at: new Date().toISOString(),
           };
         });
