@@ -798,6 +798,8 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Customer</th>
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Total</th>
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Status</th>
+                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Tip</th>
+                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Delivery</th>
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Date</th>
               </tr>
             </thead>
@@ -874,6 +876,20 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                       >
                         Check Payment
                       </button>
+                    )}
+                  </td>
+                  <td className="px-5 py-3 text-xs text-gray-500 font-medium">
+                    {(o.tip_cents as number) > 0 ? formatPrice(o.tip_cents as number) : '—'}
+                  </td>
+                  <td className="px-5 py-3">
+                    {(o.fulfillment_type as string) === 'delivery' ? (
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        (o.delivery_status as string) === 'delivered' ? 'bg-green-50 text-green-700' :
+                        (o.delivery_status as string) === 'assigned' ? 'bg-blue-50 text-blue-700' :
+                        'bg-gray-100 text-gray-500'
+                      }`}>{(o.delivery_status as string) || 'pending'}</span>
+                    ) : (
+                      <span className="text-[10px] text-gray-400">Pickup</span>
                     )}
                   </td>
                   <td className="px-5 py-3 text-xs text-gray-400">{formatDate(o.created_at as string)}</td>
