@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
-  const supabase = createServiceClient();
   const { searchParams } = new URL(request.url);
   const token = searchParams.get('token');
 
@@ -12,6 +13,8 @@ export async function GET(request: Request) {
       status: 400,
     });
   }
+
+  const supabase = createServiceClient();
 
   const { data: driver } = await supabase
     .from('drivers')
