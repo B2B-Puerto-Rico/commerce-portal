@@ -218,16 +218,20 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
           <thead>
             <tr className="border-b border-glass-border">
               <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Product</th>
-              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Price</th>
-              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Stock</th>
-              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Cart</th>
-              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">POS</th>
-              {canEdit && <th className="text-right text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Actions</th>}
+              <th className="hidden md:table-cell text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Price</th>
+              <th className="hidden md:table-cell text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Stock</th>
+              <th className="hidden md:table-cell text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Cart</th>
+              <th className="hidden md:table-cell text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">POS</th>
+              {canEdit && <th className="hidden md:table-cell text-right text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-glass-border">
             {products.map((p) => (
-              <tr key={p.clover_item_id} className="hover:bg-glass-neutral/50">
+              <tr
+                key={p.clover_item_id}
+                className="hover:bg-glass-neutral/50 cursor-pointer md:cursor-default"
+                onClick={() => { if (canEdit && window.innerWidth < 768) openEdit(p); }}
+              >
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
                     {p.image_url ? (
@@ -242,27 +246,31 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                     <div className="min-w-0">
                       <span className="font-medium text-sm text-glass-primary">{p.name}</span>
                       {p.description ? <span className="block text-xs text-gray-400 mt-0.5 truncate max-w-xs">{p.description}</span> : null}
+                      {/* Mobile: show price + edit hint inline */}
+                      <span className="md:hidden block text-xs text-glass-secondary mt-0.5">
+                        {formatPrice(p.price_cents)} {canEdit && <span className="text-cobalt ml-1">Tap to edit</span>}
+                      </span>
                     </div>
                   </div>
                 </td>
-                <td className="px-5 py-3 text-sm font-medium text-gray-700">{formatPrice(p.price_cents)}</td>
-                <td className="px-5 py-3">
+                <td className="hidden md:table-cell px-5 py-3 text-sm font-medium text-gray-700">{formatPrice(p.price_cents)}</td>
+                <td className="hidden md:table-cell px-5 py-3">
                   <span className={`text-xs font-medium ${p.in_stock ? 'text-green-600' : 'text-red-500'}`}>
                     {p.in_stock ? 'In stock' : 'Out of stock'}
                   </span>
                 </td>
-                <td className="px-5 py-3">
+                <td className="hidden md:table-cell px-5 py-3">
                   <span className={`text-xs font-medium ${!p.hidden_online ? 'text-green-600' : 'text-gray-400'}`}>
                     {!p.hidden_online ? 'Visible' : 'Hidden'}
                   </span>
                 </td>
-                <td className="px-5 py-3">
+                <td className="hidden md:table-cell px-5 py-3">
                   <span className={`text-xs font-medium ${!p.hidden_in_clover ? 'text-green-600' : 'text-gray-400'}`}>
                     {!p.hidden_in_clover ? 'Visible' : 'Hidden'}
                   </span>
                 </td>
                 {canEdit && (
-                  <td className="px-5 py-3 text-right space-x-3">
+                  <td className="hidden md:table-cell px-5 py-3 text-right space-x-3">
                     <button onClick={() => openEdit(p)} className="text-xs text-cobalt hover:text-cobalt-600 font-medium">
                       Edit
                     </button>
