@@ -152,7 +152,7 @@ export async function POST(request: Request) {
     // =========================================================================
     let targetMatched = false;
 
-    for (const [orderId, { txn }] of results) {
+    for (const [orderId, { txn }] of Array.from(results.entries())) {
       const txnId = String(txn.txn_id || '');
 
       await supabase.from('cart_orders').update({
