@@ -37,15 +37,15 @@ export function MerchantSidebar({ businessName }: { businessName: string }) {
   ];
 
   return (
-    <aside className="hidden md:flex md:w-[240px] md:flex-col md:fixed md:inset-y-0 bg-white border-r border-gray-100">
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-gray-50">
+    <aside className="hidden md:flex md:w-[240px] md:flex-col md:fixed md:inset-y-0 bg-white border-r border-glass-border">
+      <div className="flex items-center gap-3 px-5 h-16 border-b border-glass-border">
         <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
         </div>
         <div className="min-w-0">
-          <span className="font-bold text-sm text-gray-900 block truncate">{businessName}</span>
+          <span className="font-bold text-sm text-glass-primary block truncate">{businessName}</span>
           <span className="text-xs text-gray-400">Online Store</span>
         </div>
       </div>
@@ -59,8 +59,8 @@ export function MerchantSidebar({ businessName }: { businessName: string }) {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-gray-900 text-white'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-cobalt text-white'
+                  : 'text-glass-secondary hover:bg-glass-neutral hover:text-glass-primary'
               }`}
             >
               <span className={isActive ? 'text-white' : 'text-gray-400'}>{item.icon}</span>

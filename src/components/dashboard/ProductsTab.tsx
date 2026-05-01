@@ -196,7 +196,7 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
         <div className="mb-4 flex justify-end">
           <button
             onClick={() => setCreating(true)}
-            className="bg-gray-900 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center gap-1.5"
+            className="bg-cobalt text-white px-4 py-2 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 active:scale-[0.98] transition-all flex items-center gap-1.5"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -213,34 +213,34 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
       )}
 
       {/* Products table */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-50">
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Product</th>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Price</th>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Stock</th>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Cart</th>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">POS</th>
-              {canEdit && <th className="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Actions</th>}
+            <tr className="border-b border-glass-border">
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Product</th>
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Price</th>
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Stock</th>
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Cart</th>
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">POS</th>
+              {canEdit && <th className="text-right text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Actions</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-glass-border">
             {products.map((p) => (
-              <tr key={p.clover_item_id} className="hover:bg-gray-50/50">
+              <tr key={p.clover_item_id} className="hover:bg-glass-neutral/50">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
                     {p.image_url ? (
                       <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
                     ) : (
-                      <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-glass-neutral flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
                     )}
                     <div className="min-w-0">
-                      <span className="font-medium text-sm text-gray-900">{p.name}</span>
+                      <span className="font-medium text-sm text-glass-primary">{p.name}</span>
                       {p.description ? <span className="block text-xs text-gray-400 mt-0.5 truncate max-w-xs">{p.description}</span> : null}
                     </div>
                   </div>
@@ -263,7 +263,7 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                 </td>
                 {canEdit && (
                   <td className="px-5 py-3 text-right space-x-3">
-                    <button onClick={() => openEdit(p)} className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                    <button onClick={() => openEdit(p)} className="text-xs text-cobalt hover:text-cobalt-600 font-medium">
                       Edit
                     </button>
                     {canCreate && (
@@ -284,10 +284,10 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
         <>
           <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setEditing(null)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="bg-glass-surface rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg text-gray-900">Edit Product</h3>
-                <button onClick={() => setEditing(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+                <h3 className="font-bold text-lg text-glass-primary">Edit Product</h3>
+                <button onClick={() => setEditing(null)} className="text-gray-400 hover:text-glass-secondary text-xl">&times;</button>
               </div>
               <p className="text-xs text-gray-400">Changes sync to Clover POS in real-time.</p>
 
@@ -339,7 +339,7 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                     {uploading ? (
                       <div className="flex flex-col items-center gap-2">
                         <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-900 border-t-transparent" />
-                        <span className="text-xs text-gray-500">Uploading...</span>
+                        <span className="text-xs text-glass-secondary">Uploading...</span>
                       </div>
                     ) : (
                       <>
@@ -377,19 +377,19 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Name</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Name</label>
                   <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Price ($)</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Price ($)</label>
                   <input type="number" step="0.01" min="0" value={editPrice} onChange={(e) => setEditPrice(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Description</label>
                   <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} rows={2}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-700">In stock</span>
@@ -419,11 +419,11 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
 
               <div className="flex gap-3 pt-2">
                 <button onClick={handleSaveEdit} disabled={saving}
-                  className="flex-1 bg-gray-900 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-300 active:scale-[0.98] transition-all">
+                  className="flex-1 bg-cobalt text-white py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-glass-border active:scale-[0.98] transition-all">
                   {saving ? 'Saving...' : 'Save & Sync to Clover'}
                 </button>
                 <button onClick={() => setEditing(null)}
-                  className="px-4 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+                  className="px-4 py-2.5 rounded-xl text-sm text-glass-secondary hover:bg-glass-neutral transition-colors">
                   Cancel
                 </button>
               </div>
@@ -437,34 +437,34 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
         <>
           <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setCreating(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="bg-glass-surface rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg text-gray-900">New Product</h3>
-                <button onClick={() => setCreating(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+                <h3 className="font-bold text-lg text-glass-primary">New Product</h3>
+                <button onClick={() => setCreating(false)} className="text-gray-400 hover:text-glass-secondary text-xl">&times;</button>
               </div>
               <p className="text-xs text-gray-400">Creates the item in Clover POS and your online menu simultaneously.</p>
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Name *</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Name *</label>
                   <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Product name"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Price ($) *</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Price ($) *</label>
                   <input type="number" step="0.01" min="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} placeholder="0.00"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Description</label>
                   <textarea value={newDesc} onChange={(e) => setNewDesc(e.target.value)} rows={2} placeholder="Optional description"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 {categories.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
+                    <label className="block text-xs font-medium text-glass-secondary mb-1">Category</label>
                     <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900">
+                      className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt">
                       <option value="">No category</option>
                       {categories.map((c) => (
                         <option key={c.clover_category_id} value={c.clover_category_id}>{c.name}</option>
@@ -476,11 +476,11 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
 
               <div className="flex gap-3 pt-2">
                 <button onClick={handleCreate} disabled={saving || !newName || !newPrice}
-                  className="flex-1 bg-gray-900 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-300 active:scale-[0.98] transition-all">
+                  className="flex-1 bg-cobalt text-white py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-glass-border active:scale-[0.98] transition-all">
                   {saving ? 'Creating...' : 'Create & Push to Clover'}
                 </button>
                 <button onClick={() => setCreating(false)}
-                  className="px-4 py-2.5 rounded-xl text-sm text-gray-600 hover:bg-gray-100 transition-colors">
+                  className="px-4 py-2.5 rounded-xl text-sm text-glass-secondary hover:bg-glass-neutral transition-colors">
                   Cancel
                 </button>
               </div>
@@ -493,17 +493,17 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
         <>
           <div className="fixed inset-0 z-[80] bg-black/50 backdrop-blur-sm" onClick={() => !generatingModel && setShowAiPicker(false)} />
           <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto">
-              <div className="p-5 border-b border-gray-100">
+            <div className="bg-glass-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto">
+              <div className="p-5 border-b border-glass-border">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Generate Image with AI</h3>
+                    <h3 className="font-bold text-lg text-glass-primary">Generate Image with AI</h3>
                     <p className="text-xs text-gray-400 mt-0.5">
                       for &ldquo;{editing.name}&rdquo;
                     </p>
                   </div>
-                  <button onClick={() => !generatingModel && setShowAiPicker(false)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <button onClick={() => !generatingModel && setShowAiPicker(false)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-glass-neutral flex items-center justify-center">
+                    <svg className="w-4 h-4 text-glass-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
@@ -543,7 +543,7 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                       }
                       setGeneratingModel(null);
                     }}
-                    className={`relative text-left rounded-xl overflow-hidden border border-gray-100 hover:border-gray-300 transition-all ${
+                    className={`relative text-left rounded-xl overflow-hidden border border-glass-border hover:border-gray-300 transition-all ${
                       generatingModel === model.id ? 'ring-2 ring-purple-500' : ''
                     } ${generatingModel && generatingModel !== model.id ? 'opacity-40' : ''}`}
                   >
@@ -557,8 +557,8 @@ export function ProductsTab({ mid, tier, products: initialProducts, categories }
                     {/* Info */}
                     <div className="p-3">
                       <p className="text-xs text-gray-400">{model.by}</p>
-                      <p className="font-bold text-sm text-gray-900 mt-0.5">{model.name}</p>
-                      <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">{model.desc}</p>
+                      <p className="font-bold text-sm text-glass-primary mt-0.5">{model.name}</p>
+                      <p className="text-[10px] text-glass-secondary mt-1 line-clamp-2">{model.desc}</p>
                     </div>
 
                     {/* Loading state */}

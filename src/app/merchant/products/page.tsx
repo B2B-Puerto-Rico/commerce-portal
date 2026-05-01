@@ -38,8 +38,8 @@ export default async function MerchantProductsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Menu</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-glass-primary">My Menu</h1>
+        <p className="text-sm text-glass-secondary mt-1">
           {products?.length || 0} products &middot; {visibleCount} visible in cart &middot; {categories?.length || 0} categories
         </p>
         {tier === 'premium' && (

@@ -85,16 +85,16 @@ export function PromoCodesManager({ mid }: { mid: string }) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
+    <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-semibold text-sm text-gray-900">Promo Codes</h3>
+          <h3 className="font-semibold text-sm text-glass-primary">Promo Codes</h3>
           <p className="text-xs text-gray-400 mt-0.5">Discount codes for customers at checkout</p>
         </div>
         {!creating && (
           <button
             onClick={() => setCreating(true)}
-            className="bg-gray-900 text-white px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-gray-800 active:scale-[0.98] transition-all"
+            className="bg-cobalt text-white px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-cobalt-600 active:scale-[0.98] transition-all"
           >
             + New Code
           </button>
@@ -103,24 +103,24 @@ export function PromoCodesManager({ mid }: { mid: string }) {
 
       {/* Create form */}
       {creating && (
-        <div className="border border-gray-200 rounded-xl p-4 mb-4 space-y-3">
+        <div className="border border-glass-border rounded-xl p-4 mb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Code</label>
+              <label className="block text-xs font-medium text-glass-secondary mb-1">Code</label>
               <input
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="PIZZA20"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border border-glass-border rounded-lg px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-cobalt"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Type</label>
+              <label className="block text-xs font-medium text-glass-secondary mb-1">Type</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as 'percentage' | 'flat')}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border border-glass-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt"
               >
                 <option value="percentage">Percentage off</option>
                 <option value="flat">Fixed amount off</option>
@@ -129,7 +129,7 @@ export function PromoCodesManager({ mid }: { mid: string }) {
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-glass-secondary mb-1">
                 {type === 'percentage' ? 'Discount %' : 'Discount $'}
               </label>
               <input
@@ -137,28 +137,28 @@ export function PromoCodesManager({ mid }: { mid: string }) {
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder={type === 'percentage' ? '20' : '5.00'}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border border-glass-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Min order $</label>
+              <label className="block text-xs font-medium text-glass-secondary mb-1">Min order $</label>
               <input
                 type="number"
                 step="0.01"
                 value={minOrder}
                 onChange={(e) => setMinOrder(e.target.value)}
                 placeholder="0"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border border-glass-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Max uses</label>
+              <label className="block text-xs font-medium text-glass-secondary mb-1">Max uses</label>
               <input
                 type="number"
                 value={maxUses}
                 onChange={(e) => setMaxUses(e.target.value)}
                 placeholder="Unlimited"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full border border-glass-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt"
               />
             </div>
           </div>
@@ -166,11 +166,11 @@ export function PromoCodesManager({ mid }: { mid: string }) {
             <button
               onClick={handleCreate}
               disabled={saving || !code || !value}
-              className="bg-gray-900 text-white px-4 py-2 rounded-lg font-semibold text-xs hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400"
+              className="bg-cobalt text-white px-4 py-2 rounded-lg font-semibold text-xs hover:bg-cobalt-600 disabled:bg-gray-200 disabled:text-gray-400"
             >
               {saving ? 'Creating...' : 'Create Code'}
             </button>
-            <button onClick={() => setCreating(false)} className="text-xs text-gray-500 hover:text-gray-700 px-3">
+            <button onClick={() => setCreating(false)} className="text-xs text-glass-secondary hover:text-gray-700 px-3">
               Cancel
             </button>
           </div>
@@ -183,9 +183,9 @@ export function PromoCodesManager({ mid }: { mid: string }) {
       ) : (
         <div className="space-y-2">
           {promos.map((p) => (
-            <div key={p.id} className={`flex items-center justify-between p-3 rounded-lg border ${p.active ? 'border-gray-100 bg-white' : 'border-gray-100 bg-gray-50 opacity-60'}`}>
+            <div key={p.id} className={`flex items-center justify-between p-3 rounded-lg border ${p.active ? 'border-glass-border bg-white' : 'border-glass-border bg-glass-neutral opacity-60'}`}>
               <div className="flex items-center gap-3">
-                <span className="font-mono font-bold text-sm text-gray-900">{p.code}</span>
+                <span className="font-mono font-bold text-sm text-glass-primary">{p.code}</span>
                 <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
                   {p.discount_type === 'percentage' ? `${p.discount_value}% off` : `$${(p.discount_value / 100).toFixed(2)} off`}
                 </span>

@@ -99,13 +99,13 @@ export function MenuBuilder({ mid, tier, categories: initCats, modifierGroups: i
           Upgrade to <strong>Premium</strong> to manage categories, modifier groups, and modifiers. All changes sync to Clover POS in real-time.
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
-            <h3 className="font-semibold text-sm text-gray-900 mb-2">Categories ({cats.length})</h3>
-            <div className="space-y-1">{cats.map(c => <div key={c.clover_category_id} className="text-sm text-gray-600 py-1">{c.name}</div>)}</div>
+          <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
+            <h3 className="font-semibold text-sm text-glass-primary mb-2">Categories ({cats.length})</h3>
+            <div className="space-y-1">{cats.map(c => <div key={c.clover_category_id} className="text-sm text-glass-secondary py-1">{c.name}</div>)}</div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
-            <h3 className="font-semibold text-sm text-gray-900 mb-2">Modifier Groups ({groups.length})</h3>
-            <div className="space-y-1">{groups.map(g => <div key={g.clover_mg_id} className="text-sm text-gray-600 py-1">{g.name} <span className="text-xs text-gray-400">({mods.filter(m => m.clover_mg_id === g.clover_mg_id).length} options)</span></div>)}</div>
+          <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
+            <h3 className="font-semibold text-sm text-glass-primary mb-2">Modifier Groups ({groups.length})</h3>
+            <div className="space-y-1">{groups.map(g => <div key={g.clover_mg_id} className="text-sm text-glass-secondary py-1">{g.name} <span className="text-xs text-gray-400">({mods.filter(m => m.clover_mg_id === g.clover_mg_id).length} options)</span></div>)}</div>
           </div>
         </div>
       </div>
@@ -117,18 +117,18 @@ export function MenuBuilder({ mid, tier, categories: initCats, modifierGroups: i
       <p className="text-xs text-gray-400">All changes sync to Clover POS in real-time. {saving && <span className="text-blue-600 font-medium">Syncing...</span>}</p>
 
       {/* ===== CATEGORIES ===== */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-sm text-gray-900">Categories ({cats.length})</h3>
+          <h3 className="font-bold text-sm text-glass-primary">Categories ({cats.length})</h3>
         </div>
 
         <div className="space-y-2 mb-4">
           {cats.map(c => (
-            <div key={c.clover_category_id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50">
+            <div key={c.clover_category_id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-glass-neutral">
               {editCat?.clover_category_id === c.clover_category_id ? (
                 <div className="flex items-center gap-2 flex-1">
                   <input type="text" value={editCatName} onChange={e => setEditCatName(e.target.value)}
-                    className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="flex-1 border border-glass-border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                   <button onClick={updateCategory} className="text-xs text-blue-600 font-medium">Save</button>
                   <button onClick={() => setEditCat(null)} className="text-xs text-gray-400">Cancel</button>
                 </div>
@@ -136,7 +136,7 @@ export function MenuBuilder({ mid, tier, categories: initCats, modifierGroups: i
                 <>
                   <span className="text-sm text-gray-700 font-medium">{c.name}</span>
                   <div className="flex gap-3">
-                    <button onClick={() => { setEditCat(c); setEditCatName(c.name); }} className="text-xs text-blue-600 hover:text-blue-800">Edit</button>
+                    <button onClick={() => { setEditCat(c); setEditCatName(c.name); }} className="text-xs text-cobalt hover:text-cobalt-600">Edit</button>
                     <button onClick={() => deleteCategory(c)} className="text-xs text-red-400 hover:text-red-600">Delete</button>
                   </div>
                 </>
@@ -147,26 +147,26 @@ export function MenuBuilder({ mid, tier, categories: initCats, modifierGroups: i
 
         <div className="flex gap-2">
           <input type="text" value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="New category name"
-            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+            className="flex-1 border border-glass-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
           <button onClick={createCategory} disabled={!newCatName || saving}
-            className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400">
+            className="bg-cobalt text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-cobalt-600 disabled:bg-gray-200 disabled:text-gray-400">
             Add
           </button>
         </div>
       </div>
 
       {/* ===== MODIFIER GROUPS ===== */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <h3 className="font-bold text-sm text-gray-900 mb-4">Modifier Groups ({groups.length})</h3>
+      <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
+        <h3 className="font-bold text-sm text-glass-primary mb-4">Modifier Groups ({groups.length})</h3>
 
         <div className="space-y-4 mb-4">
           {groups.map(mg => {
             const groupMods = mods.filter(m => m.clover_mg_id === mg.clover_mg_id);
             return (
-              <div key={mg.clover_mg_id} className="border border-gray-100 rounded-xl p-4">
+              <div key={mg.clover_mg_id} className="border border-glass-border rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <span className="font-semibold text-sm text-gray-900">{mg.name}</span>
+                    <span className="font-semibold text-sm text-glass-primary">{mg.name}</span>
                     <span className="text-xs text-gray-400 ml-2">
                       {mg.min_required > 0 ? 'Required' : 'Optional'} &middot; Max {mg.max_allowed}
                     </span>
@@ -178,7 +178,7 @@ export function MenuBuilder({ mid, tier, categories: initCats, modifierGroups: i
                 <div className="space-y-1 ml-3 mb-2">
                   {groupMods.map(mod => (
                     <div key={mod.clover_modifier_id} className="flex items-center justify-between py-1.5 text-sm">
-                      <span className="text-gray-600">{mod.name} <span className="text-gray-400">{formatPrice(mod.price_cents)}</span></span>
+                      <span className="text-glass-secondary">{mod.name} <span className="text-gray-400">{formatPrice(mod.price_cents)}</span></span>
                       <button onClick={() => deleteModifier(mod)} className="text-xs text-red-400 hover:text-red-600">Remove</button>
                     </div>
                   ))}
@@ -188,16 +188,16 @@ export function MenuBuilder({ mid, tier, categories: initCats, modifierGroups: i
                 {addingModTo === mg.clover_mg_id ? (
                   <div className="flex gap-2 ml-3">
                     <input type="text" value={newModName} onChange={e => setNewModName(e.target.value)} placeholder="Modifier name"
-                      className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                      className="flex-1 border border-glass-border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                     <input type="number" step="0.01" value={newModPrice} onChange={e => setNewModPrice(e.target.value)} placeholder="0.00"
-                      className="w-20 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                      className="w-20 border border-glass-border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                     <button onClick={() => createModifier(mg.clover_mg_id)} disabled={!newModName || saving}
                       className="text-xs text-blue-600 font-medium">Add</button>
                     <button onClick={() => setAddingModTo(null)} className="text-xs text-gray-400">Cancel</button>
                   </div>
                 ) : (
                   <button onClick={() => { setAddingModTo(mg.clover_mg_id); setNewModName(''); setNewModPrice('0'); }}
-                    className="text-xs text-blue-600 hover:text-blue-800 font-medium ml-3">
+                    className="text-xs text-cobalt hover:text-cobalt-600 font-medium ml-3">
                     + Add modifier
                   </button>
                 )}
@@ -207,18 +207,18 @@ export function MenuBuilder({ mid, tier, categories: initCats, modifierGroups: i
         </div>
 
         {/* Create modifier group */}
-        <div className="border-t border-gray-100 pt-4 space-y-3">
-          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">New Modifier Group</h4>
+        <div className="border-t border-glass-border pt-4 space-y-3">
+          <h4 className="text-xs font-semibold text-glass-secondary uppercase tracking-wider">New Modifier Group</h4>
           <div className="flex gap-2">
             <input type="text" value={newMgName} onChange={e => setNewMgName(e.target.value)} placeholder="Group name (e.g. Size, Toppings)"
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+              className="flex-1 border border-glass-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
             <select value={newMgMin} onChange={e => setNewMgMin(Number(e.target.value))}
-              className="border border-gray-200 rounded-lg px-2 py-2 text-sm">
+              className="border border-glass-border rounded-lg px-2 py-2 text-sm">
               <option value={0}>Optional</option>
               <option value={1}>Required (min 1)</option>
             </select>
             <select value={newMgMax} onChange={e => setNewMgMax(Number(e.target.value))}
-              className="border border-gray-200 rounded-lg px-2 py-2 text-sm">
+              className="border border-glass-border rounded-lg px-2 py-2 text-sm">
               <option value={1}>Pick 1</option>
               <option value={2}>Up to 2</option>
               <option value={3}>Up to 3</option>
@@ -226,7 +226,7 @@ export function MenuBuilder({ mid, tier, categories: initCats, modifierGroups: i
               <option value={10}>Up to 10</option>
             </select>
             <button onClick={createGroup} disabled={!newMgName || saving}
-              className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400">
+              className="bg-cobalt text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-cobalt-600 disabled:bg-gray-200 disabled:text-gray-400">
               Create
             </button>
           </div>

@@ -40,36 +40,36 @@ export default async function MerchantsPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-50">
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">
+              <tr className="border-b border-glass-border">
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">
                   Merchant
                 </th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">
                   Cart
                 </th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">
                   Tier
                 </th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">
                   Orders (30d)
                 </th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">
                   Last Sync
                 </th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">
                   Region
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-glass-border">
               {(merchants || []).map((m) => (
-                <tr key={m.mid} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={m.mid} className="hover:bg-glass-neutral/50 transition-colors">
                   <td className="px-5 py-4">
                     <a
                       href={`/dashboard/merchants/${m.mid}`}
                       className="group flex items-center gap-3"
                     >
-                      <div className="w-9 h-9 rounded-lg bg-white shadow-sm border border-gray-100 p-1.5 flex-shrink-0">
+                      <div className="w-9 h-9 rounded-lg bg-white shadow-sm border border-glass-border p-1.5 flex-shrink-0">
                         <img
                           src={(m.company as string) === 'slice' ? '/slice-logo.png' : '/b2b-logo.png'}
                           alt=""
@@ -77,7 +77,7 @@ export default async function MerchantsPage() {
                         />
                       </div>
                       <div>
-                        <span className="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                        <span className="font-semibold text-sm text-glass-primary group-hover:text-cobalt transition-colors flex items-center gap-2">
                           {m.business_name}
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                             (m.company as string) === 'slice' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
@@ -96,7 +96,7 @@ export default async function MerchantsPage() {
                       className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${
                         m.cart_enabled
                           ? 'bg-green-50 text-green-700'
-                          : 'bg-gray-50 text-gray-500'
+                          : 'bg-glass-neutral text-glass-secondary'
                       }`}
                     >
                       <span
@@ -108,12 +108,12 @@ export default async function MerchantsPage() {
                     </span>
                   </td>
                   <td className="px-5 py-4">
-                    <span className="text-xs font-medium text-gray-600 bg-gray-50 px-2 py-0.5 rounded capitalize">
+                    <span className="text-xs font-medium text-glass-secondary bg-glass-neutral px-2 py-0.5 rounded capitalize">
                       {m.cart_tier}
                     </span>
                   </td>
                   <td className="px-5 py-4">
-                    <span className="text-sm text-gray-600 font-medium">
+                    <span className="text-sm text-glass-secondary font-medium">
                       {countMap.get(m.mid) || 0}
                     </span>
                   </td>

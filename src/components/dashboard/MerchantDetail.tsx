@@ -248,7 +248,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       case 'paid': return 'bg-green-50 text-green-700';
       case 'pending': return 'bg-yellow-50 text-yellow-700';
       case 'failed': return 'bg-red-50 text-red-700';
-      default: return 'bg-gray-50 text-gray-600';
+      default: return 'bg-glass-neutral text-glass-secondary';
     }
   };
 
@@ -265,19 +265,19 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
     <div>
       {/* Breadcrumb + header */}
       <div className="mb-6">
-        <a href="/dashboard/merchants" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+        <a href="/dashboard/merchants" className="text-xs text-gray-400 hover:text-glass-secondary transition-colors">
           &larr; All merchants
         </a>
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">{m.business_name as string}</h1>
+            <h1 className="text-2xl font-bold text-glass-primary">{m.business_name as string}</h1>
             <button
               onClick={handleToggleCart}
               disabled={toggling}
               className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full cursor-pointer transition-colors ${
                 cartEnabled
                   ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  : 'bg-gray-100 text-glass-secondary hover:bg-glass-neutral'
               }`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${cartEnabled ? 'bg-green-500' : 'bg-gray-300'}`} />
@@ -296,7 +296,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-gray-100 -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto scrollbar-hide">
+      <div className="flex gap-1 mb-6 border-b border-glass-border -mx-4 md:-mx-6 px-4 md:px-6 overflow-x-auto scrollbar-hide">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -304,7 +304,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${
               tab === t.id
                 ? 'border-cobalt text-cobalt'
-                : 'border-transparent text-gray-400 hover:text-gray-600'
+                : 'border-transparent text-gray-400 hover:text-glass-secondary'
             }`}
           >
             {t.label}
@@ -322,17 +322,17 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Products</p>
-            <p className="text-3xl font-bold text-gray-900 mt-2">{products.length}</p>
+            <p className="text-3xl font-bold text-glass-primary mt-2">{products.length}</p>
             <p className="text-xs text-gray-400 mt-1">{products.filter((p) => !(p.hidden_online as boolean)).length} visible in cart</p>
           </div>
           <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Orders (30d)</p>
-            <p className="text-3xl font-bold text-gray-900 mt-2">{orders.length}</p>
+            <p className="text-3xl font-bold text-glass-primary mt-2">{orders.length}</p>
             <p className="text-xs text-gray-400 mt-1">{orders.filter((o) => o.status === 'paid').length} paid</p>
           </div>
           <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Last Sync</p>
-            <p className="text-lg font-bold text-gray-900 mt-2">
+            <p className="text-lg font-bold text-glass-primary mt-2">
               {m.last_full_sync_at ? formatDate(m.last_full_sync_at as string) : 'Never'}
             </p>
             <p className="text-xs text-gray-400 mt-1">{syncRuns.length} total sync runs</p>
@@ -340,7 +340,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
 
           {/* Connection info */}
           <div className="md:col-span-3 bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
-            <h3 className="font-semibold text-sm text-gray-900 mb-3">Connection details</h3>
+            <h3 className="font-semibold text-sm text-glass-primary mb-3">Connection details</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <p className="text-xs text-gray-400">Region</p>
@@ -357,7 +357,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
               <div>
                 <p className="text-xs text-gray-400">Site</p>
                 {m.site_url ? (
-                  <a href={m.site_url as string} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline mt-0.5 block truncate">
+                  <a href={m.site_url as string} target="_blank" rel="noopener noreferrer" className="font-medium text-cobalt hover:underline mt-0.5 block truncate">
                     {(m.site_url as string).replace('https://', '')}
                   </a>
                 ) : (
@@ -374,8 +374,8 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                       activeProvider === 'clover'
                         ? 'bg-green-100 text-green-800 ring-2 ring-green-400'
                         : cloverConnected
-                          ? 'bg-gray-100 text-gray-500 hover:bg-gray-200 cursor-pointer'
-                          : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                          ? 'bg-gray-100 text-glass-secondary hover:bg-glass-neutral cursor-pointer'
+                          : 'bg-glass-neutral text-gray-300 cursor-not-allowed'
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${activeProvider === 'clover' ? 'bg-green-500' : cloverConnected ? 'bg-gray-300' : 'bg-gray-200'}`} />
@@ -389,8 +389,8 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                       activeProvider === 'valor'
                         ? 'bg-amber-100 text-amber-800 ring-2 ring-amber-400'
                         : valorConnected
-                          ? 'bg-gray-100 text-gray-500 hover:bg-gray-200 cursor-pointer'
-                          : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                          ? 'bg-gray-100 text-glass-secondary hover:bg-glass-neutral cursor-pointer'
+                          : 'bg-glass-neutral text-gray-300 cursor-not-allowed'
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${activeProvider === 'valor' ? 'bg-amber-500' : valorConnected ? 'bg-gray-300' : 'bg-gray-200'}`} />
@@ -415,7 +415,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             </div>
           {/* Business Hours */}
           <div className="md:col-span-3 bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
-            <h3 className="font-semibold text-sm text-gray-900 mb-3 flex items-center gap-2">
+            <h3 className="font-semibold text-sm text-glass-primary mb-3 flex items-center gap-2">
               <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -452,7 +452,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                         className={`rounded-xl p-3 text-center ${
                           isToday
                             ? isClosed ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'
-                            : 'bg-gray-50'
+                            : 'bg-glass-neutral'
                         }`}
                       >
                         <p className={`text-[10px] font-bold uppercase tracking-wider ${
@@ -488,7 +488,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="bg-cobalt text-white px-5 py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-gray-300 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
+              className="bg-cobalt text-white px-5 py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-glass-border disabled:cursor-not-allowed active:scale-[0.98] transition-all"
             >
               {syncing ? 'Syncing...' : 'Sync Now'}
             </button>
@@ -508,7 +508,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       {tab === 'connect' && (
         <div className="max-w-lg space-y-6">
           <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
-            <h3 className="font-semibold text-sm text-gray-900 mb-1">Connect Clover Account</h3>
+            <h3 className="font-semibold text-sm text-glass-primary mb-1">Connect Clover Account</h3>
             <p className="text-xs text-gray-400 mb-4">
               Paste the Clover API credentials for this merchant. Tokens are encrypted at rest using Supabase Vault.
             </p>
@@ -523,7 +523,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   value={accessToken}
                   onChange={(e) => setAccessToken(e.target.value)}
                   placeholder="Paste Clover access token"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-glass-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   From Clover Developer Dashboard → Your App → API Tokens
@@ -539,7 +539,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   value={ecommerceSk}
                   onChange={(e) => setEcommerceSk(e.target.value)}
                   placeholder="sk_... (for Hosted Checkout)"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-glass-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   Only needed for payment processing. Can add later.
@@ -580,7 +580,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       {tab === 'connect-valor' && (
         <div className="max-w-lg space-y-6">
           <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
-            <h3 className="font-semibold text-sm text-gray-900 mb-1">Connect Valor PayTech</h3>
+            <h3 className="font-semibold text-sm text-glass-primary mb-1">Connect Valor PayTech</h3>
             <p className="text-xs text-gray-400 mb-4">
               Enter the Valor API credentials for this merchant. All credentials are encrypted at rest using Supabase Vault.
             </p>
@@ -595,7 +595,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   value={valorAppId}
                   onChange={(e) => setValorAppId(e.target.value)}
                   placeholder="32-character APP ID"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-glass-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt"
                 />
               </div>
 
@@ -608,7 +608,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   value={valorAppKey}
                   onChange={(e) => setValorAppKey(e.target.value)}
                   placeholder="32-character EPI-scoped APP KEY"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-glass-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   Must match the EPI below. Get it from Valor Portal → Virtual Terminal → Manage → API Keys.
@@ -625,7 +625,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   onChange={(e) => setValorEpi(e.target.value)}
                   placeholder="10-digit EPI (starts with 2)"
                   maxLength={10}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="w-full border border-glass-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt"
                 />
               </div>
 
@@ -635,7 +635,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   <select
                     value={valorEnv}
                     onChange={(e) => setValorEnv(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                    className="w-full border border-glass-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt bg-white"
                   >
                     <option value="staging">Staging</option>
                     <option value="production">Production</option>
@@ -646,7 +646,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                   <select
                     value={valorCheckoutMode}
                     onChange={(e) => setValorCheckoutMode(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                    className="w-full border border-glass-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt bg-white"
                   >
                     <option value="passage">Inline (Passage.js)</option>
                     <option value="hosted_page">Redirect (Hosted Page)</option>
@@ -661,7 +661,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                     type="checkbox"
                     checked={valorSurchargeEnabled}
                     onChange={(e) => setValorSurchargeEnabled(e.target.checked)}
-                    className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                    className="rounded border-gray-300 text-glass-primary focus:ring-cobalt"
                   />
                   Enable surcharge
                 </label>
@@ -678,7 +678,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                         placeholder="350"
                         min={0}
                         max={500}
-                        className="w-32 border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        className="w-32 border border-glass-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt"
                       />
                       <span className="text-xs text-gray-400">
                         {valorSurchargeRate ? `= ${(parseInt(valorSurchargeRate, 10) / 100).toFixed(2)}%` : '350 = 3.50%'}
@@ -762,7 +762,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.refresh()}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium text-gray-700 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-glass-neutral rounded-lg text-xs font-medium text-gray-700 transition-colors"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -802,31 +802,31 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             )}
           </div>
 
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-50">
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Order</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Customer</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Total</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Status</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Tip</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Delivery</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Date</th>
+              <tr className="border-b border-glass-border">
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Order</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Customer</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Total</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Status</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Tip</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Delivery</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Date</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-glass-border">
               {orders.length === 0 ? (
                 <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-gray-400">No orders yet</td></tr>
               ) : orders.map((o) => (
-                <tr key={o.id as string} className="hover:bg-gray-50/50">
+                <tr key={o.id as string} className="hover:bg-glass-neutral/50">
                   <td className="px-5 py-3">
                     {(o.clover_order_id as string) ? (
                       <a
                         href={`${(m.environment as string) === 'sandbox' ? 'https://sandbox.dev.clover.com' : 'https://www.clover.com'}/orders/m/${m.mid}/orders/${o.clover_order_id}/`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-mono font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                        className="text-xs font-mono font-semibold text-cobalt hover:text-cobalt-600 hover:underline"
                       >
                         #{o.clover_order_id as string}
                       </a>
@@ -853,10 +853,10 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                     )}
                   </td>
                   <td className="px-5 py-3">
-                    <span className="text-sm font-medium text-gray-900">{o.customer_name as string}</span>
+                    <span className="text-sm font-medium text-glass-primary">{o.customer_name as string}</span>
                     <span className="block text-xs text-gray-400">{o.customer_email as string}</span>
                   </td>
-                  <td className="px-5 py-3 text-sm font-semibold text-gray-900">{formatPrice(o.total_cents as number)}</td>
+                  <td className="px-5 py-3 text-sm font-semibold text-glass-primary">{formatPrice(o.total_cents as number)}</td>
                   <td className="px-5 py-3">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColor(o.status as string)}`}>
                       {o.status as string}
@@ -884,13 +884,13 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                           }
                         }}
                         id={`check-${o.id}`}
-                        className="ml-2 text-[10px] font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                        className="ml-2 text-[10px] font-semibold text-cobalt hover:text-cobalt-600 hover:underline cursor-pointer"
                       >
                         Check Payment
                       </button>
                     )}
                   </td>
-                  <td className="px-5 py-3 text-xs text-gray-500 font-medium">
+                  <td className="px-5 py-3 text-xs text-glass-secondary font-medium">
                     {(o.tip_cents as number) > 0 ? formatPrice(o.tip_cents as number) : '—'}
                   </td>
                   <td className="px-5 py-3">
@@ -900,7 +900,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                           (o.delivery_status as string) === 'delivered' ? 'bg-green-50 text-green-700' :
                           (o.delivery_status as string) === 'picked_up' ? 'bg-amber-50 text-amber-700' :
                           (o.delivery_status as string) === 'assigned' ? 'bg-blue-50 text-blue-700' :
-                          'bg-gray-100 text-gray-500'
+                          'bg-gray-100 text-glass-secondary'
                         }`}>{(o.delivery_status as string) || 'pending'}</span>
                         {/* Driver assignment - show dropdown for unassigned delivery orders */}
                         {(o.status as string) === 'paid' && !(o.assigned_driver_id as string) && (
@@ -958,22 +958,22 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
       {/* Sync tab */}
       {/* ================================================================= */}
       {tab === 'sync' && (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-50">
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Trigger</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Scope</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Status</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Items</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Started</th>
+              <tr className="border-b border-glass-border">
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Trigger</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Scope</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Status</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Items</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Started</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-glass-border">
               {syncRuns.length === 0 ? (
                 <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-gray-400">No sync runs yet</td></tr>
               ) : syncRuns.map((s) => (
-                <tr key={s.id as string} className="hover:bg-gray-50/50">
+                <tr key={s.id as string} className="hover:bg-glass-neutral/50">
                   <td className="px-5 py-3 text-sm text-gray-700 capitalize">{s.trigger as string}</td>
                   <td className="px-5 py-3 text-sm text-gray-700 capitalize">{s.scope as string}</td>
                   <td className="px-5 py-3">

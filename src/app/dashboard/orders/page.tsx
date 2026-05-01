@@ -16,7 +16,7 @@ const statusColor = (s: string) => {
     case 'pending': return 'bg-yellow-50 text-yellow-700';
     case 'failed': return 'bg-red-50 text-red-700';
     case 'refunded': return 'bg-purple-50 text-purple-700';
-    default: return 'bg-gray-50 text-gray-600';
+    default: return 'bg-glass-neutral text-glass-secondary';
   }
 };
 
@@ -56,41 +56,41 @@ export default async function OrdersPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-        <p className="text-sm text-gray-500 mt-1">All cart orders across merchants</p>
+        <h1 className="text-2xl font-bold text-glass-primary">Orders</h1>
+        <p className="text-sm text-glass-secondary mt-1">All cart orders across merchants</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Orders</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{total}</p>
+          <p className="text-3xl font-bold text-glass-primary mt-2">{total}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Paid Orders</p>
           <p className="text-3xl font-bold text-green-600 mt-2">{paid}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Revenue</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{formatPrice(revenue)}</p>
+          <p className="text-3xl font-bold text-glass-primary mt-2">{formatPrice(revenue)}</p>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-50">
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Order</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Merchant</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Customer</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Total</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Status</th>
-                <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Date</th>
+              <tr className="border-b border-glass-border">
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Order</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Merchant</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Customer</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Total</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Status</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Date</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-glass-border">
               {(!orders || orders.length === 0) ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center text-sm text-gray-400">
@@ -98,14 +98,14 @@ export default async function OrdersPage() {
                   </td>
                 </tr>
               ) : orders.map((o) => (
-                <tr key={o.id} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={o.id} className="hover:bg-glass-neutral/50 transition-colors">
                   <td className="px-5 py-3">
                     {o.clover_order_id ? (
                       <a
                         href={cloverOrderUrl(o.mid, o.clover_order_id)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-mono font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                        className="text-xs font-mono font-semibold text-cobalt hover:text-cobalt-600 hover:underline"
                       >
                         #{o.clover_order_id}
                       </a>
@@ -117,10 +117,10 @@ export default async function OrdersPage() {
                     <span className="text-sm text-gray-700">{merchantMap.get(o.mid)?.name || o.mid}</span>
                   </td>
                   <td className="px-5 py-3">
-                    <span className="text-sm font-medium text-gray-900">{o.customer_name}</span>
+                    <span className="text-sm font-medium text-glass-primary">{o.customer_name}</span>
                     <span className="block text-xs text-gray-400">{o.customer_email}</span>
                   </td>
-                  <td className="px-5 py-3 text-sm font-semibold text-gray-900">
+                  <td className="px-5 py-3 text-sm font-semibold text-glass-primary">
                     {formatPrice(o.total_cents)}
                   </td>
                   <td className="px-5 py-3">

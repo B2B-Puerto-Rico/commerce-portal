@@ -16,7 +16,7 @@ const statusColor = (s: string) => {
     case 'paid': return 'bg-green-50 text-green-700';
     case 'pending': return 'bg-yellow-50 text-yellow-700';
     case 'failed': return 'bg-red-50 text-red-700';
-    default: return 'bg-gray-50 text-gray-600';
+    default: return 'bg-glass-neutral text-glass-secondary';
   }
 };
 
@@ -52,37 +52,37 @@ export default async function MerchantOrdersPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-        <p className="text-sm text-gray-500 mt-1">Orders placed through your online cart</p>
+        <h1 className="text-2xl font-bold text-glass-primary">Orders</h1>
+        <p className="text-sm text-glass-secondary mt-1">Orders placed through your online cart</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Orders</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{orders?.length || 0}</p>
+          <p className="text-3xl font-bold text-glass-primary mt-2">{orders?.length || 0}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Paid</p>
           <p className="text-3xl font-bold text-green-600 mt-2">{paidCount}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Revenue</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{formatPrice(revenue)}</p>
+          <p className="text-3xl font-bold text-glass-primary mt-2">{formatPrice(revenue)}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      <div className="bg-glass-surface rounded-2xl border border-glass-border overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-50">
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Order</th>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Customer</th>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Total</th>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Status</th>
-              <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-3">Date</th>
+            <tr className="border-b border-glass-border">
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Order</th>
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Customer</th>
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Total</th>
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Status</th>
+              <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Date</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-glass-border">
             {(!orders || orders.length === 0) ? (
               <tr>
                 <td colSpan={5} className="px-5 py-12 text-center text-sm text-gray-400">
@@ -90,14 +90,14 @@ export default async function MerchantOrdersPage() {
                 </td>
               </tr>
             ) : orders.map((o) => (
-              <tr key={o.id} className="hover:bg-gray-50/50">
+              <tr key={o.id} className="hover:bg-glass-neutral/50">
                 <td className="px-5 py-3">
                   {o.clover_order_id ? (
                     <a
                       href={`${cloverBase}/orders/m/${mid}/orders/${o.clover_order_id}/`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs font-mono font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                      className="text-xs font-mono font-semibold text-cobalt hover:text-cobalt-600 hover:underline"
                     >
                       #{o.clover_order_id}
                     </a>
@@ -106,10 +106,10 @@ export default async function MerchantOrdersPage() {
                   )}
                 </td>
                 <td className="px-5 py-3">
-                  <span className="text-sm font-medium text-gray-900">{o.customer_name}</span>
+                  <span className="text-sm font-medium text-glass-primary">{o.customer_name}</span>
                   <span className="block text-xs text-gray-400">{o.customer_email}</span>
                 </td>
-                <td className="px-5 py-3 text-sm font-semibold text-gray-900">{formatPrice(o.total_cents)}</td>
+                <td className="px-5 py-3 text-sm font-semibold text-glass-primary">{formatPrice(o.total_cents)}</td>
                 <td className="px-5 py-3">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColor(o.status)}`}>{o.status}</span>
                 </td>

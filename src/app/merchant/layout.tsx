@@ -29,7 +29,7 @@ export default async function MerchantLayout({
     .single();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-glass-neutral">
       <MerchantSidebar businessName={merchant?.business_name || 'My Store'} />
       <div className="md:pl-[240px] flex flex-col min-h-screen">
         <Header email={user.email} />

@@ -78,15 +78,15 @@ export default function MerchantSettingsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-500 mt-1">Customize your online cart</p>
+        <h1 className="text-2xl font-bold text-glass-primary">Settings</h1>
+        <p className="text-sm text-glass-secondary mt-1">Customize your online cart</p>
       </div>
 
       <div className="max-w-2xl space-y-6">
         {/* Banner Upload */}
         {(tier === 'pro' || tier === 'premium') && (
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
-            <h3 className="font-semibold text-sm text-gray-900 mb-1">Store Banner</h3>
+          <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
+            <h3 className="font-semibold text-sm text-glass-primary mb-1">Store Banner</h3>
             <p className="text-xs text-gray-400 mb-3">Appears at the top of your cart widget. Recommended: 1200x400px.</p>
             <div
               className="relative border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-gray-400 transition-colors cursor-pointer"
@@ -116,28 +116,28 @@ export default function MerchantSettingsPage() {
 
         {/* Cart Appearance */}
         {(tier === 'pro' || tier === 'premium') && (
-          <div className="bg-white rounded-xl border border-gray-100 p-5">
-            <h3 className="font-semibold text-sm text-gray-900 mb-4">Cart Appearance</h3>
+          <div className="bg-glass-surface rounded-2xl border border-glass-border p-5">
+            <h3 className="font-semibold text-sm text-glass-primary mb-4">Cart Appearance</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Button Color</label>
+                <label className="block text-xs font-medium text-glass-secondary mb-1">Button Color</label>
                 <div className="flex items-center gap-3">
                   <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer" />
+                    className="w-10 h-10 rounded-lg border border-glass-border cursor-pointer" />
                   <input type="text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-28 border border-glass-border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Button Text</label>
+                <label className="block text-xs font-medium text-glass-secondary mb-1">Button Text</label>
                 <input type="text" value={buttonText} onChange={(e) => setButtonText(e.target.value)}
-                  className="w-48 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                  className="w-48 border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
               </div>
             </div>
 
             <div className="mt-4 flex items-center gap-3">
               <button onClick={handleSave} disabled={saving}
-                className="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-300 active:scale-[0.98] transition-all">
+                className="bg-cobalt text-white px-6 py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-glass-border active:scale-[0.98] transition-all">
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
               {saved && <span className="text-sm text-green-600 font-medium">Saved!</span>}
@@ -153,14 +153,14 @@ export default function MerchantSettingsPage() {
         )}
 
         {/* Embed Code */}
-        <div className="bg-white rounded-xl border border-gray-100 p-6">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border p-6">
           <div className="flex items-center gap-2 mb-2">
-            <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-glass-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
             </svg>
-            <h2 className="font-bold text-base text-gray-900">Add Cart to Your Website</h2>
+            <h2 className="font-bold text-base text-glass-primary">Add Cart to Your Website</h2>
           </div>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-glass-secondary mb-4">
             Copy and paste this one line into your website.
           </p>
           <div className="relative">
@@ -171,7 +171,7 @@ export default function MerchantSettingsPage() {
             </button>
           </div>
           <a href={`https://commerce-cart-prod.b2bweb.app/widget?mid=${mid}`} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 mt-3 text-xs text-blue-600 hover:text-blue-800 font-medium">
+            className="inline-flex items-center gap-1 mt-3 text-xs text-cobalt hover:text-cobalt-600 font-medium">
             Preview your cart
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -180,9 +180,9 @@ export default function MerchantSettingsPage() {
         </div>
 
         {/* Quick install */}
-        <div className="bg-white rounded-xl border border-gray-100 p-6">
-          <h3 className="font-semibold text-sm text-gray-900 mb-3">Quick Install Guide</h3>
-          <div className="space-y-2 text-sm text-gray-600">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border p-6">
+          <h3 className="font-semibold text-sm text-glass-primary mb-3">Quick Install Guide</h3>
+          <div className="space-y-2 text-sm text-glass-secondary">
             <p><strong>HTML:</strong> Paste before <code className="bg-gray-100 px-1 rounded text-xs">&lt;/body&gt;</code></p>
             <p><strong>WordPress:</strong> Insert Headers and Footers plugin → Footer</p>
             <p><strong>Shopify:</strong> theme.liquid → before <code className="bg-gray-100 px-1 rounded text-xs">&lt;/body&gt;</code></p>
@@ -191,9 +191,9 @@ export default function MerchantSettingsPage() {
         </div>
 
         {/* Account */}
-        <div className="bg-white rounded-xl border border-gray-100 p-6">
-          <h3 className="font-semibold text-sm text-gray-900 mb-3">Account</h3>
-          <div className="text-sm text-gray-600 space-y-1">
+        <div className="bg-glass-surface rounded-2xl border border-glass-border p-6">
+          <h3 className="font-semibold text-sm text-glass-primary mb-3">Account</h3>
+          <div className="text-sm text-glass-secondary space-y-1">
             <p>Merchant ID: <span className="font-mono text-gray-400">{mid}</span></p>
             <p>Business: <span className="font-medium">{merchant?.business_name as string}</span></p>
             <p>Tier: <span className="font-medium capitalize">{tier}</span></p>

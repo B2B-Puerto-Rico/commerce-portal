@@ -105,7 +105,7 @@ export function AddMerchantForm() {
       >
         <style>{`@keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }`}</style>
 
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-glass-surface rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div className={`${headerGradient} px-8 pt-8 pb-6 text-center relative overflow-hidden transition-all duration-500`}>
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full" />
@@ -113,7 +113,7 @@ export function AddMerchantForm() {
 
             <div className="relative">
               {selectedCompany ? (
-                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg p-2">
+                <div className="w-16 h-16 bg-glass-surface rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg p-2">
                   <img src={selectedCompany.logo} alt={selectedCompany.name} className="w-full h-full object-contain" />
                 </div>
               ) : (
@@ -154,7 +154,7 @@ export function AddMerchantForm() {
             {step === 'company' && (
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5">
+                  <label className="block text-sm font-semibold text-glass-primary mb-1.5">
                     Select Company
                   </label>
                   <p className="text-xs text-gray-400 mb-4">
@@ -167,14 +167,14 @@ export function AddMerchantForm() {
                         onClick={() => { setCompany(c.id); setStep('name'); }}
                         className={`group relative p-5 rounded-2xl border-2 text-center transition-all duration-200 hover:shadow-lg ${
                           company === c.id
-                            ? `border-gray-900 bg-gray-50 shadow-md`
+                            ? `border-gray-900 bg-glass-neutral shadow-md`
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
-                        <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-white shadow-sm border border-gray-100 p-2 group-hover:scale-105 transition-transform">
+                        <div className="w-16 h-16 mx-auto mb-3 rounded-xl bg-white shadow-sm border border-glass-border p-2 group-hover:scale-105 transition-transform">
                           <img src={c.logo} alt={c.name} className="w-full h-full object-contain" />
                         </div>
-                        <p className="text-sm font-bold text-gray-900">{c.name}</p>
+                        <p className="text-sm font-bold text-glass-primary">{c.name}</p>
                         <p className="text-[11px] text-gray-400 mt-0.5">{c.fullName}</p>
                       </button>
                     ))}
@@ -182,7 +182,7 @@ export function AddMerchantForm() {
                 </div>
                 <button
                   onClick={reset}
-                  className="w-full py-3 rounded-xl text-sm font-semibold text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="w-full py-3 rounded-xl text-sm font-semibold text-gray-400 hover:text-glass-secondary hover:bg-glass-neutral transition-colors"
                 >
                   Cancel
                 </button>
@@ -193,7 +193,7 @@ export function AddMerchantForm() {
             {step === 'name' && (
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5">
+                  <label className="block text-sm font-semibold text-glass-primary mb-1.5">
                     Business Name
                   </label>
                   <p className="text-xs text-gray-400 mb-3">
@@ -207,13 +207,13 @@ export function AddMerchantForm() {
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && name && setStep('mid')}
                     placeholder="e.g. Mar Azul Restaurant"
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 text-base font-medium text-gray-900 placeholder:text-gray-300 focus:outline-none focus:border-gray-900 focus:ring-0 transition-colors"
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 text-base font-medium text-glass-primary placeholder:text-gray-300 focus:outline-none focus:border-cobalt focus:ring-0 transition-colors"
                   />
                 </div>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setStep('company')}
-                    className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold text-glass-secondary hover:text-gray-700 hover:bg-glass-neutral transition-colors"
                   >
                     Back
                   </button>
@@ -232,7 +232,7 @@ export function AddMerchantForm() {
             {step === 'mid' && (
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5">
+                  <label className="block text-sm font-semibold text-glass-primary mb-1.5">
                     Merchant ID
                   </label>
                   <p className="text-xs text-gray-400 mb-3">
@@ -246,19 +246,19 @@ export function AddMerchantForm() {
                     onChange={(e) => setMid(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && mid && setStep('environment')}
                     placeholder="e.g. H0Y1154CXWA91"
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 text-base font-mono font-medium text-gray-900 placeholder:text-gray-300 focus:outline-none focus:border-gray-900 focus:ring-0 transition-colors"
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 text-base font-mono font-medium text-glass-primary placeholder:text-gray-300 focus:outline-none focus:border-cobalt focus:ring-0 transition-colors"
                   />
                 </div>
 
                 {name && mid && selectedCompany && (
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <div className="bg-glass-neutral rounded-xl p-4 border border-glass-border">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Preview</p>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-white shadow-sm border border-gray-100 p-1.5 flex-shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-white shadow-sm border border-glass-border p-1.5 flex-shrink-0">
                         <img src={selectedCompany.logo} alt="" className="w-full h-full object-contain" />
                       </div>
                       <div>
-                        <p className="font-semibold text-sm text-gray-900">{name}</p>
+                        <p className="font-semibold text-sm text-glass-primary">{name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-gray-400 font-mono">{mid}</span>
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedCompany.tagColor}`}>
@@ -273,7 +273,7 @@ export function AddMerchantForm() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setStep('name')}
-                    className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold text-glass-secondary hover:text-gray-700 hover:bg-glass-neutral transition-colors"
                   >
                     Back
                   </button>
@@ -292,7 +292,7 @@ export function AddMerchantForm() {
             {step === 'environment' && (
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5">
+                  <label className="block text-sm font-semibold text-glass-primary mb-1.5">
                     Environment
                   </label>
                   <p className="text-xs text-gray-400 mb-3">
@@ -302,59 +302,59 @@ export function AddMerchantForm() {
                     <button
                       onClick={() => setEnvironment('sandbox')}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        environment === 'sandbox' ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+                        environment === 'sandbox' ? 'border-gray-900 bg-glass-neutral' : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                         </svg>
-                        <span className="text-sm font-bold text-gray-900">Sandbox</span>
+                        <span className="text-sm font-bold text-glass-primary">Sandbox</span>
                       </div>
-                      <p className="text-xs text-gray-500">Test with fake data</p>
+                      <p className="text-xs text-glass-secondary">Test with fake data</p>
                     </button>
                     <button
                       onClick={() => setEnvironment('production')}
                       className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        environment === 'production' ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+                        environment === 'production' ? 'border-gray-900 bg-glass-neutral' : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
-                        <span className="text-sm font-bold text-gray-900">Production</span>
+                        <span className="text-sm font-bold text-glass-primary">Production</span>
                       </div>
-                      <p className="text-xs text-gray-500">Live payments</p>
+                      <p className="text-xs text-glass-secondary">Live payments</p>
                     </button>
                   </div>
                 </div>
 
                 {/* Summary */}
                 {selectedCompany && (
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-2.5">
+                  <div className="bg-glass-neutral rounded-xl p-4 border border-glass-border space-y-2.5">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Ready to create</p>
                     <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
-                      <div className="w-9 h-9 rounded-lg bg-white shadow-sm border border-gray-100 p-1.5">
+                      <div className="w-9 h-9 rounded-lg bg-white shadow-sm border border-glass-border p-1.5">
                         <img src={selectedCompany.logo} alt="" className="w-full h-full object-contain" />
                       </div>
                       <div>
-                        <span className="text-sm font-bold text-gray-900">{name}</span>
+                        <span className="text-sm font-bold text-glass-primary">{name}</span>
                         <span className={`ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${selectedCompany.tagColor}`}>
                           {selectedCompany.name}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">MID</span>
+                      <span className="text-xs text-glass-secondary">MID</span>
                       <span className="text-sm font-mono text-gray-700">{mid}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Region</span>
+                      <span className="text-xs text-glass-secondary">Region</span>
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cobalt-50 text-cobalt">{company === 'slice' ? 'USA' : 'Puerto Rico'}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Environment</span>
+                      <span className="text-xs text-glass-secondary">Environment</span>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                         environment === 'production' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
                       }`}>{environment}</span>
@@ -369,7 +369,7 @@ export function AddMerchantForm() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setStep('mid')}
-                    className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex-1 py-3 rounded-xl text-sm font-semibold text-glass-secondary hover:text-gray-700 hover:bg-glass-neutral transition-colors"
                   >
                     Back
                   </button>
@@ -386,10 +386,10 @@ export function AddMerchantForm() {
             {/* Creating */}
             {step === 'creating' && selectedCompany && (
               <div className="py-8 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-white shadow-md border border-gray-100 p-2 mx-auto mb-4 animate-pulse">
+                <div className="w-14 h-14 rounded-2xl bg-white shadow-md border border-glass-border p-2 mx-auto mb-4 animate-pulse">
                   <img src={selectedCompany.logo} alt="" className="w-full h-full object-contain" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900">Creating {name}...</p>
+                <p className="text-sm font-semibold text-glass-primary">Creating {name}...</p>
                 <p className="text-xs text-gray-400 mt-1">Setting up under {selectedCompany.fullName}</p>
               </div>
             )}

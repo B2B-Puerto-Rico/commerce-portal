@@ -248,7 +248,7 @@ export function DriversTab({ mid }: { mid: string }) {
             key={tab.id}
             onClick={() => setView(tab.id)}
             className={`flex-1 py-2.5 rounded-lg text-xs font-semibold transition-all ${
-              view === tab.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              view === tab.id ? 'bg-white text-glass-primary shadow-sm' : 'text-glass-secondary hover:text-gray-700'
             }`}
           >
             {tab.label}
@@ -263,7 +263,7 @@ export function DriversTab({ mid }: { mid: string }) {
       {view === 'drivers' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm text-gray-900">Delivery Drivers</h3>
+            <h3 className="font-semibold text-sm text-glass-primary">Delivery Drivers</h3>
             <button
               onClick={() => { setEditingDriverId(null); setDriverForm({ full_name: '', email: '', phone: '', pay_type: 'per_delivery', pay_rate: '', zone_ids: [] }); setShowAddDriver(!showAddDriver); }}
               className="bg-cobalt text-white px-4 py-2 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 active:scale-[0.98] transition-all"
@@ -281,38 +281,38 @@ export function DriversTab({ mid }: { mid: string }) {
           {/* Add driver form */}
           {showAddDriver && (
             <form onSubmit={handleAddDriver} className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm p-5 space-y-4">
-              <h4 className="font-semibold text-sm text-gray-900">{editingDriverId ? 'Edit Driver' : 'New Driver'}</h4>
+              <h4 className="font-semibold text-sm text-glass-primary">{editingDriverId ? 'Edit Driver' : 'New Driver'}</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Full Name *</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Full Name *</label>
                   <input required value={driverForm.full_name} onChange={(e) => setDriverForm({ ...driverForm, full_name: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Email *</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Email *</label>
                   <input required type="email" value={driverForm.email} onChange={(e) => setDriverForm({ ...driverForm, email: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Phone *</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Phone *</label>
                   <input required type="tel" value={driverForm.phone} onChange={(e) => setDriverForm({ ...driverForm, phone: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Pay Type</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Pay Type</label>
                   <select value={driverForm.pay_type} onChange={(e) => setDriverForm({ ...driverForm, pay_type: e.target.value })}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                    className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-cobalt">
                     <option value="per_delivery">Per Delivery</option>
                     <option value="hourly">Hourly</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Rate ($)</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Rate ($)</label>
                   <input type="number" step="0.01" value={driverForm.pay_rate} onChange={(e) => setDriverForm({ ...driverForm, pay_rate: e.target.value })}
-                    placeholder="5.00" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    placeholder="5.00" className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Assign Zones</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Assign Zones</label>
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {zones.map((z) => (
                       <button key={z.id} type="button"
@@ -323,7 +323,7 @@ export function DriversTab({ mid }: { mid: string }) {
                             : [...driverForm.zone_ids, z.id],
                         })}
                         className={`text-[11px] font-semibold px-2 py-1 rounded-full transition-all ${
-                          driverForm.zone_ids.includes(z.id) ? 'text-white' : 'bg-gray-100 text-gray-500'
+                          driverForm.zone_ids.includes(z.id) ? 'text-white' : 'bg-gray-100 text-glass-secondary'
                         }`}
                         style={driverForm.zone_ids.includes(z.id) ? { backgroundColor: z.color } : undefined}
                       >
@@ -336,11 +336,11 @@ export function DriversTab({ mid }: { mid: string }) {
               </div>
               <div className="flex gap-3">
                 <button type="submit" disabled={addingDriver}
-                  className="bg-cobalt text-white px-5 py-2.5 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 disabled:bg-gray-300">
+                  className="bg-cobalt text-white px-5 py-2.5 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 disabled:bg-glass-border">
                   {addingDriver ? 'Saving...' : editingDriverId ? 'Update Driver' : 'Add Driver & Send Invite'}
                 </button>
                 <button type="button" onClick={() => setShowAddDriver(false)}
-                  className="text-xs text-gray-400 hover:text-gray-600 px-3">Cancel</button>
+                  className="text-xs text-gray-400 hover:text-glass-secondary px-3">Cancel</button>
               </div>
             </form>
           )}
@@ -350,20 +350,20 @@ export function DriversTab({ mid }: { mid: string }) {
             {drivers.length === 0 ? (
               <div className="text-center py-12 text-gray-400 text-sm">No drivers yet. Add your first driver above.</div>
             ) : (
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-glass-border">
                 {drivers.map((driver) => (
                   <div key={driver.id} className="px-5 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-500">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-glass-secondary">
                         {driver.full_name.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-gray-900">{driver.full_name}</span>
+                          <span className="text-sm font-semibold text-glass-primary">{driver.full_name}</span>
                           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                             driver.status === 'active' ? 'bg-green-50 text-green-700' :
                             driver.status === 'pending' ? 'bg-amber-50 text-amber-700' :
-                            'bg-gray-100 text-gray-500'
+                            'bg-gray-100 text-glass-secondary'
                           }`}>
                             {driver.status}
                           </span>
@@ -414,7 +414,7 @@ export function DriversTab({ mid }: { mid: string }) {
       {view === 'zones' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm text-gray-900">Delivery Zones</h3>
+            <h3 className="font-semibold text-sm text-glass-primary">Delivery Zones</h3>
             <button onClick={() => setShowAddZone(!showAddZone)}
               className="bg-cobalt text-white px-4 py-2 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600">
               + Add Zone
@@ -425,27 +425,27 @@ export function DriversTab({ mid }: { mid: string }) {
             <form onSubmit={handleAddZone} className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm p-5 space-y-3">
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Zone Name *</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Zone Name *</label>
                   <input required value={zoneForm.name} onChange={(e) => setZoneForm({ ...zoneForm, name: e.target.value })}
-                    placeholder="Zone A" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    placeholder="Zone A" className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Zip Codes (comma separated)</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Zip Codes (comma separated)</label>
                   <input value={zoneForm.zip_codes} onChange={(e) => setZoneForm({ ...zoneForm, zip_codes: e.target.value })}
-                    placeholder="00901, 00902, 00907" className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                    placeholder="00901, 00902, 00907" className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Color</label>
+                  <label className="block text-xs font-medium text-glass-secondary mb-1">Color</label>
                   <input type="color" value={zoneForm.color} onChange={(e) => setZoneForm({ ...zoneForm, color: e.target.value })}
-                    className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer" />
+                    className="w-10 h-10 rounded-lg border border-glass-border cursor-pointer" />
                 </div>
               </div>
               <div className="flex gap-3">
                 <button type="submit" disabled={addingZone}
-                  className="bg-cobalt text-white px-5 py-2.5 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 disabled:bg-gray-300">
+                  className="bg-cobalt text-white px-5 py-2.5 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 disabled:bg-glass-border">
                   {addingZone ? 'Adding...' : 'Create Zone'}
                 </button>
-                <button type="button" onClick={() => setShowAddZone(false)} className="text-xs text-gray-400 hover:text-gray-600 px-3">Cancel</button>
+                <button type="button" onClick={() => setShowAddZone(false)} className="text-xs text-gray-400 hover:text-glass-secondary px-3">Cancel</button>
               </div>
             </form>
           )}
@@ -458,7 +458,7 @@ export function DriversTab({ mid }: { mid: string }) {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: zone.color }} />
-                      <span className="text-sm font-bold text-gray-900">{zone.name}</span>
+                      <span className="text-sm font-bold text-glass-primary">{zone.name}</span>
                     </div>
                     <div className="flex gap-2">
                       <button onClick={() => startEditZone(zone)} className="text-xs text-blue-500 hover:text-blue-700 font-medium">Edit</button>
@@ -467,7 +467,7 @@ export function DriversTab({ mid }: { mid: string }) {
                   </div>
                   <div className="flex flex-wrap gap-1 mb-2">
                     {zone.zip_codes.map((zip) => (
-                      <span key={zip} className="text-[11px] font-mono bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{zip}</span>
+                      <span key={zip} className="text-[11px] font-mono bg-gray-100 text-glass-secondary px-2 py-0.5 rounded">{zip}</span>
                     ))}
                     {zone.zip_codes.length === 0 && <span className="text-xs text-gray-400">No zip codes</span>}
                   </div>
@@ -493,9 +493,9 @@ export function DriversTab({ mid }: { mid: string }) {
       {view === 'analytics' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm text-gray-900">Driver Analytics</h3>
+            <h3 className="font-semibold text-sm text-glass-primary">Driver Analytics</h3>
             <button onClick={loadStats} disabled={loadingStats}
-              className="bg-cobalt text-white px-4 py-2 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 disabled:bg-gray-300">
+              className="bg-cobalt text-white px-4 py-2 rounded-[10px] text-xs font-semibold hover:bg-cobalt-600 disabled:bg-glass-border">
               {loadingStats ? 'Loading...' : 'Load Analytics'}
             </button>
           </div>
@@ -511,20 +511,20 @@ export function DriversTab({ mid }: { mid: string }) {
               <div key={ds.driver_id as string} className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm overflow-hidden">
                 {/* Driver summary card */}
                 <button onClick={() => setSelectedDriverStats(isExpanded ? null : (ds.driver_id as string))}
-                  className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left">
+                  className="w-full px-5 py-4 flex items-center justify-between hover:bg-glass-neutral transition-colors text-left">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700">
                       {(ds.name as string).charAt(0)}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{ds.name as string}</p>
+                      <p className="text-sm font-semibold text-glass-primary">{ds.name as string}</p>
                       <p className="text-xs text-gray-400">{ds.completed_deliveries as number} of {ds.total_deliveries as number} deliveries completed</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-right">
                     <div>
                       <p className="text-xs text-gray-400">Earnings</p>
-                      <p className="text-sm font-bold text-gray-900">{formatPrice((ds.total_earnings_cents as number) || 0)}</p>
+                      <p className="text-sm font-bold text-glass-primary">{formatPrice((ds.total_earnings_cents as number) || 0)}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">Tips</p>
@@ -532,7 +532,7 @@ export function DriversTab({ mid }: { mid: string }) {
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">Avg Time</p>
-                      <p className="text-sm font-bold text-gray-900">{(ds.avg_delivery_mins as number) || '—'} min</p>
+                      <p className="text-sm font-bold text-glass-primary">{(ds.avg_delivery_mins as number) || '—'} min</p>
                     </div>
                     <svg className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -542,34 +542,34 @@ export function DriversTab({ mid }: { mid: string }) {
 
                 {/* Expanded delivery history */}
                 {isExpanded && (
-                  <div className="border-t border-gray-100">
+                  <div className="border-t border-glass-border">
                     <table className="w-full">
                       <thead>
-                        <tr className="bg-gray-50">
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Order</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Customer</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Total</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Tip</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Status</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Time</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Date</th>
+                        <tr className="bg-glass-neutral">
+                          <th className="text-left text-[10px] font-semibold text-glass-secondary uppercase px-5 py-2">Order</th>
+                          <th className="text-left text-[10px] font-semibold text-glass-secondary uppercase px-5 py-2">Customer</th>
+                          <th className="text-left text-[10px] font-semibold text-glass-secondary uppercase px-5 py-2">Total</th>
+                          <th className="text-left text-[10px] font-semibold text-glass-secondary uppercase px-5 py-2">Tip</th>
+                          <th className="text-left text-[10px] font-semibold text-glass-secondary uppercase px-5 py-2">Status</th>
+                          <th className="text-left text-[10px] font-semibold text-glass-secondary uppercase px-5 py-2">Time</th>
+                          <th className="text-left text-[10px] font-semibold text-glass-secondary uppercase px-5 py-2">Date</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-50">
+                      <tbody className="divide-y divide-glass-border">
                         {deliveries.map((d) => (
-                          <tr key={d.assignment_id as string} className="hover:bg-gray-50/50">
-                            <td className="px-5 py-2 text-xs font-mono text-gray-500">{(d.order_id as string).slice(0, 8)}</td>
+                          <tr key={d.assignment_id as string} className="hover:bg-glass-neutral/50">
+                            <td className="px-5 py-2 text-xs font-mono text-glass-secondary">{(d.order_id as string).slice(0, 8)}</td>
                             <td className="px-5 py-2 text-xs text-gray-700">{d.customer_name as string}</td>
-                            <td className="px-5 py-2 text-xs font-semibold text-gray-900">{formatPrice((d.total_cents as number) || 0)}</td>
+                            <td className="px-5 py-2 text-xs font-semibold text-glass-primary">{formatPrice((d.total_cents as number) || 0)}</td>
                             <td className="px-5 py-2 text-xs font-semibold text-green-600">{(d.tip_cents as number) > 0 ? formatPrice(d.tip_cents as number) : '—'}</td>
                             <td className="px-5 py-2">
                               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                                 (d.status as string) === 'delivered' ? 'bg-green-50 text-green-700' :
                                 (d.status as string) === 'assigned' ? 'bg-blue-50 text-blue-700' :
-                                'bg-gray-100 text-gray-500'
+                                'bg-gray-100 text-glass-secondary'
                               }`}>{d.status as string}</span>
                             </td>
-                            <td className="px-5 py-2 text-xs text-gray-500">{(d.delivery_mins as number) ? `${d.delivery_mins}m` : '—'}</td>
+                            <td className="px-5 py-2 text-xs text-glass-secondary">{(d.delivery_mins as number) ? `${d.delivery_mins}m` : '—'}</td>
                             <td className="px-5 py-2 text-xs text-gray-400">{d.assigned_at ? new Date(d.assigned_at as string).toLocaleDateString() : '—'}</td>
                           </tr>
                         ))}
@@ -590,7 +590,7 @@ export function DriversTab({ mid }: { mid: string }) {
         <div className="max-w-lg space-y-4">
           <div className="bg-glass-surface rounded-2xl border border-glass-border shadow-sm p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-sm text-gray-900">Delivery Settings</h3>
+              <h3 className="font-semibold text-sm text-glass-primary">Delivery Settings</h3>
               <button onClick={() => setConfigForm({ ...configForm, delivery_enabled: !configForm.delivery_enabled })}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   configForm.delivery_enabled ? 'bg-green-500' : 'bg-gray-300'
@@ -602,51 +602,51 @@ export function DriversTab({ mid }: { mid: string }) {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Store Address</label>
+              <label className="block text-xs font-medium text-glass-secondary mb-1">Store Address</label>
               <input value={configForm.store_address || ''} onChange={(e) => setConfigForm({ ...configForm, store_address: e.target.value })}
                 placeholder="123 Main St, San Juan, PR 00901"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
               <p className="text-xs text-gray-400 mt-1">Used to calculate distance to delivery addresses</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Delivery Radius (miles)</label>
+                <label className="block text-xs font-medium text-glass-secondary mb-1">Delivery Radius (miles)</label>
                 <input type="number" step="0.5" value={configForm.delivery_radius_miles}
                   onChange={(e) => setConfigForm({ ...configForm, delivery_radius_miles: parseFloat(e.target.value) || 10 })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                  className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Delivery Fee ($)</label>
+                <label className="block text-xs font-medium text-glass-secondary mb-1">Delivery Fee ($)</label>
                 <input type="number" step="0.01" value={(configForm.delivery_fee_cents / 100).toFixed(2)}
                   onChange={(e) => setConfigForm({ ...configForm, delivery_fee_cents: Math.round(parseFloat(e.target.value || '0') * 100) })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                  className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Prep Time (minutes)</label>
+                <label className="block text-xs font-medium text-glass-secondary mb-1">Prep Time (minutes)</label>
                 <input type="number" value={configForm.estimated_prep_mins}
                   onChange={(e) => setConfigForm({ ...configForm, estimated_prep_mins: parseInt(e.target.value) || 20 })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                  className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Min Order ($)</label>
+                <label className="block text-xs font-medium text-glass-secondary mb-1">Min Order ($)</label>
                 <input type="number" step="0.01" value={(configForm.min_order_cents / 100).toFixed(2)}
                   onChange={(e) => setConfigForm({ ...configForm, min_order_cents: Math.round(parseFloat(e.target.value || '0') * 100) })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                  className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt" />
               </div>
             </div>
 
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
               <input type="checkbox" checked={configForm.tipping_enabled}
                 onChange={(e) => setConfigForm({ ...configForm, tipping_enabled: e.target.checked })}
-                className="rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
+                className="rounded border-gray-300 text-glass-primary focus:ring-cobalt" />
               Enable tipping at checkout
             </label>
           </div>
 
           <div className="flex items-center gap-3">
             <button onClick={handleSaveConfig} disabled={savingConfig}
-              className="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-300">
+              className="bg-cobalt text-white px-6 py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-glass-border">
               {savingConfig ? 'Saving...' : 'Save Delivery Settings'}
             </button>
             {configSaved && (

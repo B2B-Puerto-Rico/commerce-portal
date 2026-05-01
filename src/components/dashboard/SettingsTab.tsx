@@ -73,34 +73,34 @@ export function SettingsTab({
     <div className="max-w-2xl space-y-6">
       {/* Merchant Details */}
       <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
-        <h3 className="font-semibold text-sm text-gray-900 mb-4">Merchant Details</h3>
+        <h3 className="font-semibold text-sm text-glass-primary mb-4">Merchant Details</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Website URL</label>
+            <label className="block text-xs font-medium text-glass-secondary mb-1">Website URL</label>
             <input
               type="url"
               value={siteUrl}
               onChange={(e) => setSiteUrl(e.target.value)}
               placeholder="https://merchant-name.b2bweb.app"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">GitHub Repository</label>
+            <label className="block text-xs font-medium text-glass-secondary mb-1">GitHub Repository</label>
             <input
               type="text"
               value={githubRepo}
               onChange={(e) => setGithubRepo(e.target.value)}
               placeholder="B2B-Puerto-Rico/merchant-name"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full border border-glass-border rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Tier</label>
+            <label className="block text-xs font-medium text-glass-secondary mb-1">Tier</label>
             <select
               value={tier}
               onChange={(e) => setTier(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt"
             >
               <option value="free">Free</option>
               <option value="pro">Pro</option>
@@ -112,7 +112,7 @@ export function SettingsTab({
 
       {/* Banner Image */}
       <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
-        <h3 className="font-semibold text-sm text-gray-900 mb-1">Store Banner</h3>
+        <h3 className="font-semibold text-sm text-glass-primary mb-1">Store Banner</h3>
         <p className="text-xs text-gray-400 mb-3">This image appears at the top of your cart widget. Recommended: 1200x400px.</p>
         <div
           className="relative border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-gray-400 transition-colors cursor-pointer"
@@ -151,7 +151,7 @@ export function SettingsTab({
 
       {/* Cart Appearance */}
       <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
-        <h3 className="font-semibold text-sm text-gray-900 mb-4">Cart Appearance</h3>
+        <h3 className="font-semibold text-sm text-glass-primary mb-4">Cart Appearance</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-700">Cart enabled</span>
@@ -168,30 +168,30 @@ export function SettingsTab({
             </button>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Button Color</label>
+            <label className="block text-xs font-medium text-glass-secondary mb-1">Button Color</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                className="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer"
+                className="w-10 h-10 rounded-lg border border-glass-border cursor-pointer"
               />
               <input
                 type="text"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                className="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-28 border border-glass-border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-cobalt"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Button Text</label>
+            <label className="block text-xs font-medium text-glass-secondary mb-1">Button Text</label>
             <input
               type="text"
               value={buttonText}
               onChange={(e) => setButtonText(e.target.value)}
               placeholder="Order"
-              className="w-48 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-48 border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt"
             />
           </div>
         </div>
@@ -200,7 +200,7 @@ export function SettingsTab({
       {/* Pizzeria Mode */}
       <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
         <div className="flex items-center justify-between mb-1">
-          <h3 className="font-semibold text-sm text-gray-900 flex items-center gap-2">
+          <h3 className="font-semibold text-sm text-glass-primary flex items-center gap-2">
             <span className="text-lg">🍕</span>
             Pizzeria Mode
           </h3>
@@ -219,14 +219,14 @@ export function SettingsTab({
           Activates a visual pizza builder for pizza products — customers can pick size, crust, sauce, toppings with half-pizza support.
         </p>
         {pizzeriaMode && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <label className="block text-xs font-medium text-gray-500 mb-1">Pizza Category Name</label>
+          <div className="mt-3 pt-3 border-t border-glass-border">
+            <label className="block text-xs font-medium text-glass-secondary mb-1">Pizza Category Name</label>
             <input
               type="text"
               value={pizzaCategoryName}
               onChange={(e) => setPizzaCategoryName(e.target.value)}
               placeholder="Pizzas"
-              className="w-48 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-48 border border-glass-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
             <p className="text-xs text-gray-400 mt-1">
               Products in this category will open the pizza builder instead of the regular product detail.
@@ -240,7 +240,7 @@ export function SettingsTab({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-cobalt text-white px-6 py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-gray-300 active:scale-[0.98] transition-all"
+          className="bg-cobalt text-white px-6 py-2.5 rounded-[10px] font-semibold text-sm hover:bg-cobalt-600 disabled:bg-glass-border active:scale-[0.98] transition-all"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
@@ -301,7 +301,7 @@ export function SettingsTab({
                 setDeploying(false);
               }}
               disabled={deploying || !cartEnabled}
-              className="bg-white text-gray-900 px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition-all flex items-center gap-2"
+              className="bg-white text-glass-primary px-6 py-2.5 rounded-[10px] font-semibold text-sm hover:bg-glass-neutral disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition-all flex items-center gap-2"
             >
               {deploying ? (
                 <>
@@ -328,10 +328,10 @@ export function SettingsTab({
       {/* Embed Code */}
       <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-2">
-          <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-glass-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
-          <h3 className="font-bold text-sm text-gray-900">Embed Code</h3>
+          <h3 className="font-bold text-sm text-glass-primary">Embed Code</h3>
         </div>
         <p className="text-xs text-gray-400 mb-4">
           Copy and paste into any website — WordPress, Shopify, HTML, anywhere.
@@ -359,7 +359,7 @@ export function SettingsTab({
           href={`https://commerce-cart-prod.b2bweb.app/widget?mid=${mid}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 mt-3 text-xs text-blue-600 hover:text-blue-800 font-medium"
+          className="inline-flex items-center gap-1 mt-3 text-xs text-cobalt hover:text-cobalt-600 font-medium"
         >
           Preview cart widget
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -370,7 +370,7 @@ export function SettingsTab({
 
       {/* Invite Merchant */}
       <div className="bg-glass-surface rounded-2xl border border-glass-border p-6 shadow-sm">
-        <h3 className="font-semibold text-sm text-gray-900 mb-1">Invite Merchant</h3>
+        <h3 className="font-semibold text-sm text-glass-primary mb-1">Invite Merchant</h3>
         <p className="text-xs text-gray-400 mb-4">Create a login for the merchant to manage their own cart.</p>
         {inviteResult ? (
           <div className="bg-green-50 rounded-lg p-4 space-y-2">
@@ -388,12 +388,12 @@ export function SettingsTab({
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
               placeholder="merchant@email.com"
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="flex-1 border border-glass-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt"
             />
             <button
               onClick={handleInvite}
               disabled={inviting || !inviteEmail}
-              className="bg-gray-900 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400"
+              className="bg-cobalt text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-cobalt-600 disabled:bg-gray-200 disabled:text-gray-400"
             >
               {inviting ? 'Creating...' : 'Invite'}
             </button>
