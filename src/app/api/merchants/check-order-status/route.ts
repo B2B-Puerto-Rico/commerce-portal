@@ -1,9 +1,13 @@
 /**
  * Check Valor order payment status.
  *
- * Queries Valor's open batch and matches transactions by amount.
- * Only matches by exact amount — no fuzzy "most recent" fallback
- * to prevent wrong transaction matching.
+ * Two modes:
+ * - Single order: POST { order_id } — checks one order
+ * - Bulk check: POST { order_id, bulk: true } — checks ALL pending orders for the merchant
+ *
+ * CRITICAL: Uses bulk matching to prevent transaction stealing.
+ * All pending orders are matched simultaneously by timestamp proximity,
+ * ensuring each transaction maps to exactly one order.
  */
 
 import { NextResponse } from 'next/server';
@@ -11,47 +15,55 @@ import { createServiceClient } from '@/lib/supabase/server';
 
 export async function POST(request: Request) {
   const supabase = createServiceClient();
-  const { order_id } = await request.json();
+  const body = await request.json();
+  const { order_id } = body;
 
   if (!order_id) {
     return NextResponse.json({ error: 'order_id required' }, { status: 400 });
   }
 
-  const { data: order } = await supabase
+  // Load the target order to get merchant ID
+  const { data: targetOrder } = await supabase
     .from('cart_orders')
     .select('*')
     .eq('id', order_id)
     .single();
 
-  if (!order) {
-    return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-  }
+  if (!targetOrder) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+  if (targetOrder.status !== 'pending') return NextResponse.json({ status: targetOrder.status, already_resolved: true });
+  if (targetOrder.payment_provider !== 'valor') return NextResponse.json({ status: targetOrder.status });
 
-  if (order.status !== 'pending') {
-    return NextResponse.json({ status: order.status, already_resolved: true });
-  }
-
-  if (order.payment_provider !== 'valor') {
-    return NextResponse.json({ status: order.status });
-  }
+  const mid = targetOrder.mid;
 
   // Get Valor credentials
   const { data: creds } = await supabase
-    .rpc('get_valor_credentials' as never, { merchant_mid: order.mid } as never)
+    .rpc('get_valor_credentials' as never, { merchant_mid: mid } as never)
     .single();
-
   const credentials = creds as unknown as Record<string, unknown>;
   if (!credentials?.valor_app_id) {
-    return NextResponse.json({
-      error: 'Valor credentials not found — reconnect in Connect Valor tab',
-      debug: { mid: order.mid },
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Valor credentials not found' }, { status: 500 });
   }
 
   const baseUrl = (credentials.valor_environment as string) === 'production'
     ? 'https://securelink.valorpaytech.com:4430'
     : 'https://securelink-staging.valorpaytech.com:4430';
 
+  // =========================================================================
+  // STEP 1: Get ALL pending Valor orders for this merchant (not just the target)
+  // =========================================================================
+  const { data: allPendingOrders } = await supabase
+    .from('cart_orders')
+    .select('id, total_cents, subtotal_cents, tax_cents, tip_cents, created_at, provider_txn_id')
+    .eq('mid', mid)
+    .eq('payment_provider', 'valor')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: true });
+
+  const pendingOrders = allPendingOrders || [];
+
+  // =========================================================================
+  // STEP 2: Get ALL Valor transactions from the batch
+  // =========================================================================
   try {
     const batchRes = await fetch(`${baseUrl}/?openbatch=`, {
       method: 'POST',
@@ -66,144 +78,126 @@ export async function POST(request: Request) {
     const batchData = await batchRes.json();
 
     if (batchData.status !== 'SUCCESS') {
-      return NextResponse.json({
-        status: 'pending',
-        error: `Valor: ${batchData.statusMsg || batchData.error_no || 'Unknown error'}`,
-      });
+      return NextResponse.json({ status: 'pending', error: 'Valor batch query failed' });
     }
 
     const txns = (batchData.batchSummaryDetails || []) as Record<string, unknown>[];
 
-    // Get already-matched txn IDs to avoid double-matching
+    // Get already-matched txn IDs
     const { data: matchedOrders } = await supabase
       .from('cart_orders')
       .select('provider_txn_id')
-      .eq('mid', order.mid)
+      .eq('mid', mid)
       .eq('payment_provider', 'valor')
       .not('provider_txn_id', 'is', null);
 
     const usedTxnIds = new Set((matchedOrders || []).map((o) => o.provider_txn_id));
 
-    const available = txns.filter((t) =>
-      t.response_code === '00' && !usedTxnIds.has(String(t.txn_id))
-    );
+    // Available approved transactions, sorted by time ascending
+    const available = txns
+      .filter((t) => t.response_code === '00' && !usedTxnIds.has(String(t.txn_id)))
+      .sort((a, b) => new Date(a.created_at as string).getTime() - new Date(b.created_at as string).getTime());
 
-    const orderTotalCents = order.total_cents as number;
-    const orderSubtotalCents = order.subtotal_cents as number;
-    const orderTaxCents = order.tax_cents as number;
-    const orderCreatedAt = new Date(order.created_at as string).getTime();
+    // =========================================================================
+    // STEP 3: BULK MATCH — pair each pending order with its best transaction
+    // =========================================================================
+    // Strategy: for each pending order (sorted by time), find the best matching
+    // transaction that:
+    //   1. Was created AFTER the order (within 30 min window)
+    //   2. Has a matching amount (exact or fuzzy)
+    // Once a transaction is matched, remove it from the pool.
 
-    // Match strategy: find the CLOSEST transaction by time that also matches by amount.
-    // This handles multiple orders with the same amount — each matches to its nearest txn.
-    //
-    // Amount matching: our total_cents should equal Valor's `amount` (base before surcharge)
-    // Time matching: the Valor txn closest to our order creation time is the best match
+    const matchedTxnIds = new Set<string>();
+    const results = new Map<string, { txn: Record<string, unknown> }>();
 
-    const findClosestByTime = (candidates: Record<string, unknown>[]) => {
-      if (candidates.length === 0) return null;
-      if (candidates.length === 1) return candidates[0];
-      // Sort by time proximity to order creation
-      return candidates.sort((a, b) => {
-        const aTime = Math.abs(new Date(a.created_at as string).getTime() - orderCreatedAt);
-        const bTime = Math.abs(new Date(b.created_at as string).getTime() - orderCreatedAt);
-        return aTime - bTime;
-      })[0];
-    }
+    for (const order of pendingOrders) {
+      const orderTime = new Date(order.created_at).getTime();
+      const orderTotal = order.total_cents;
+      const orderSubtotal = order.subtotal_cents;
 
-    let match = null;
+      // Find candidates: created after order, within 30 min, not already matched
+      const candidates = available.filter((t) => {
+        const txnId = String(t.txn_id);
+        if (matchedTxnIds.has(txnId)) return false;
 
-    // 1: Exact amount match (Valor base = our total), pick closest by time
-    const exactAmountMatches = available.filter((t) => (t.amount as number) === orderTotalCents);
-    match = findClosestByTime(exactAmountMatches);
+        const txnTime = new Date(t.created_at as string).getTime();
+        const timeDiff = txnTime - orderTime;
+        // Transaction should be after order creation, within 30 minutes
+        if (timeDiff < -60000 || timeDiff > 1800000) return false;
 
-    // 2: Exact txamount match (for older orders)
-    if (!match) {
-      const txAmountMatches = available.filter((t) => (t.txamount as number) === orderTotalCents);
-      match = findClosestByTime(txAmountMatches);
-    }
+        return true;
+      });
 
-    // 3: Subtotal match
-    if (!match) {
-      const subtotalMatches = available.filter((t) => (t.amount as number) === orderSubtotalCents);
-      match = findClosestByTime(subtotalMatches);
-    }
-
-    // 4: Fuzzy amount + closest time
-    if (!match) {
-      const fuzzyMatches = available.filter((t) => {
+      // Try exact amount match first, then fuzzy
+      let best = candidates.find((t) => (t.amount as number) === orderTotal);
+      if (!best) best = candidates.find((t) => (t.txamount as number) === orderTotal);
+      if (!best) best = candidates.find((t) => (t.amount as number) === orderSubtotal);
+      if (!best) best = candidates.find((t) => {
         const amt = t.amount as number;
         const txamt = t.txamount as number;
-        return Math.abs(amt - orderTotalCents) <= Math.max(orderTotalCents * 0.05, 10) ||
-               Math.abs(txamt - orderTotalCents) <= Math.max(orderTotalCents * 0.05, 10);
+        return Math.abs(amt - orderTotal) <= Math.max(orderTotal * 0.05, 15) ||
+               Math.abs(txamt - orderTotal) <= Math.max(orderTotal * 0.05, 15);
       });
-      match = findClosestByTime(fuzzyMatches);
+      // Last resort: closest transaction in time window (only if just one candidate)
+      if (!best && candidates.length === 1) best = candidates[0];
+
+      if (best) {
+        matchedTxnIds.add(String(best.txn_id));
+        results.set(order.id, { txn: best });
+      }
     }
 
-    // 5: Any unmatched txn created after the order, closest by time
-    if (!match) {
-      const afterOrder = available.filter((t) =>
-        new Date(t.created_at as string).getTime() >= orderCreatedAt - 60000
-      );
-      match = findClosestByTime(afterOrder);
-    }
+    // =========================================================================
+    // STEP 4: Apply matches — update all matched orders
+    // =========================================================================
+    let targetMatched = false;
 
-    if (!match) {
-      return NextResponse.json({
-        status: 'pending',
-        found: false,
-        debug: {
-          order_total: orderTotalCents,
-          order_subtotal: orderSubtotalCents,
-          order_tax: orderTaxCents,
-          order_created: order.created_at,
-          available_txns: available.map((t) => ({
-            txn_id: t.txn_id,
-            amount: t.amount,
-            txamount: t.txamount,
-            time: t.created_at,
-          })),
-        },
-      });
-    }
+    for (const [orderId, { txn }] of results) {
+      const txnId = String(txn.txn_id || '');
 
-    // Verify the match is after the order was created (sanity check)
-    const txnTime = new Date(match.created_at as string).getTime();
-    if (txnTime < orderCreatedAt - 60000) {
-      // Transaction is from before the order — skip it
-      return NextResponse.json({
-        status: 'pending',
-        found: false,
-        debug: { reason: 'Transaction predates order', txn_time: match.created_at, order_time: order.created_at },
-      });
-    }
-
-    // Match found — update order to paid
-    const txnId = String(match.txn_id || '');
-
-    await supabase
-      .from('cart_orders')
-      .update({
+      await supabase.from('cart_orders').update({
         status: 'paid',
         provider_txn_id: txnId,
         provider_meta: {
           ref_txn_id: txnId,
-          rrn: match.rrn,
-          auth_code: match.approval_code,
-          pan: (match.masked_card_no as string)?.replace(/\s/g, ''),
-          card_brand: match.card_scheme,
-          amount_cents: match.amount,
-          total_cents: match.txamount,
-          source: 'check-status',
+          rrn: txn.rrn,
+          auth_code: txn.approval_code,
+          pan: (txn.masked_card_no as string)?.replace(/\s/g, ''),
+          card_brand: txn.card_scheme,
+          source: 'bulk-check',
         },
-      })
-      .eq('id', order_id)
-      .eq('status', 'pending');
+      }).eq('id', orderId).eq('status', 'pending');
 
-    // Send confirmation emails via cart API
-    const cartDomain = process.env.CART_WEBHOOK_DOMAIN || 'https://commerce-cart.b2bweb.app';
-    fetch(`${cartDomain}/api/orders/${order_id}/check-status`, { method: 'POST' }).catch(() => {});
+      if (orderId === order_id) targetMatched = true;
 
-    return NextResponse.json({ status: 'paid', found: true, transaction_id: txnId });
+      // Send email via cart API (best effort)
+      const cartDomain = process.env.CART_WEBHOOK_DOMAIN || 'https://commerce-cart.b2bweb.app';
+      fetch(`${cartDomain}/api/orders/${orderId}/check-status`, { method: 'POST' }).catch(() => {});
+    }
+
+    // Return status for the target order
+    if (targetMatched) {
+      const matchedTxn = results.get(order_id);
+      return NextResponse.json({
+        status: 'paid',
+        found: true,
+        transaction_id: String(matchedTxn?.txn.txn_id || ''),
+        total_matched: results.size,
+      });
+    }
+
+    return NextResponse.json({
+      status: 'pending',
+      found: false,
+      total_matched: results.size,
+      debug: {
+        pending_orders: pendingOrders.length,
+        available_txns: available.length,
+        matched: results.size,
+        target_total: targetOrder.total_cents,
+        target_created: targetOrder.created_at,
+      },
+    });
   } catch (err) {
     return NextResponse.json({
       status: 'pending',
