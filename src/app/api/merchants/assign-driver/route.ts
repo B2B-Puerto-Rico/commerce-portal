@@ -76,7 +76,6 @@ export async function POST(request: Request) {
     const lineItems = (order.line_items as { name: string; quantity: number; price_cents: number }[]) || [];
     const itemsList = lineItems.map((i) => `${i.quantity}x ${i.name}`).join(', ');
 
-    const pickedUpUrl = `${baseUrl}/delivery/${actionToken}?action=picked_up`;
     const deliveredUrl = `${baseUrl}/delivery/${actionToken}?action=delivered`;
 
     try {
@@ -109,9 +108,8 @@ export async function POST(request: Request) {
                   ${order.tip_cents > 0 ? `<p style="font-size:13px;color:#059669;font-weight:600;margin:4px 0 0">Tip: $${(order.tip_cents / 100).toFixed(2)}</p>` : ''}
 
                   <div style="margin-top:24px;text-align:center">
-                    <p style="font-size:12px;color:#9ca3af;margin:0 0 12px">Update delivery status:</p>
-                    <a href="${pickedUpUrl}" style="display:inline-block;background:#F59E0B;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin:0 4px">Picked Up</a>
-                    <a href="${deliveredUrl}" style="display:inline-block;background:#10B981;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin:0 4px">Delivered</a>
+                    <p style="font-size:12px;color:#9ca3af;margin:0 0 12px">Once delivered, confirm it here:</p>
+                    <a href="${deliveredUrl}" style="display:inline-block;background:#10B981;color:white;padding:14px 48px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px">Mark as Delivered</a>
                   </div>
                 </div>
               </div>

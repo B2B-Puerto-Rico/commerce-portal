@@ -46,7 +46,10 @@ export function DriversTab({ mid }: { mid: string }) {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'drivers' | 'zones' | 'settings'>('drivers');
+  const [view, setView] = useState<'drivers' | 'zones' | 'settings' | 'analytics'>('drivers');
+  const [driverStats, setDriverStats] = useState<Record<string, unknown>[]>([]);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [selectedDriverStats, setSelectedDriverStats] = useState<string | null>(null);
 
   // Add/Edit driver form
   const [showAddDriver, setShowAddDriver] = useState(false);
@@ -162,6 +165,14 @@ export function DriversTab({ mid }: { mid: string }) {
     setAddingZone(false);
   }
 
+  async function loadStats() {
+    setLoadingStats(true);
+    const res = await fetch(`/api/merchants/driver-stats?mid=${mid}`);
+    const data = await res.json();
+    setDriverStats(data.drivers || []);
+    setLoadingStats(false);
+  }
+
   async function handleSaveConfig() {
     setSavingConfig(true);
     setConfigSaved(false);
@@ -208,6 +219,7 @@ export function DriversTab({ mid }: { mid: string }) {
         {[
           { id: 'drivers' as const, label: 'Drivers', count: drivers.length },
           { id: 'zones' as const, label: 'Zones', count: zones.length },
+          { id: 'analytics' as const, label: 'Analytics' },
           { id: 'settings' as const, label: 'Delivery Settings' },
         ].map((tab) => (
           <button
@@ -453,6 +465,105 @@ export function DriversTab({ mid }: { mid: string }) {
       {/* ============================================= */}
       {/* SETTINGS */}
       {/* ============================================= */}
+      {/* ============================================= */}
+      {/* ANALYTICS */}
+      {/* ============================================= */}
+      {view === 'analytics' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-sm text-gray-900">Driver Analytics</h3>
+            <button onClick={loadStats} disabled={loadingStats}
+              className="bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-gray-800 disabled:bg-gray-300">
+              {loadingStats ? 'Loading...' : 'Load Analytics'}
+            </button>
+          </div>
+
+          {driverStats.length === 0 && !loadingStats && (
+            <div className="text-center py-8 text-gray-400 text-sm">Click &ldquo;Load Analytics&rdquo; to see driver performance data.</div>
+          )}
+
+          {driverStats.map((ds) => {
+            const isExpanded = selectedDriverStats === (ds.driver_id as string);
+            const deliveries = (ds.deliveries as Record<string, unknown>[]) || [];
+            return (
+              <div key={ds.driver_id as string} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                {/* Driver summary card */}
+                <button onClick={() => setSelectedDriverStats(isExpanded ? null : (ds.driver_id as string))}
+                  className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700">
+                      {(ds.name as string).charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{ds.name as string}</p>
+                      <p className="text-xs text-gray-400">{ds.completed_deliveries as number} of {ds.total_deliveries as number} deliveries completed</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-right">
+                    <div>
+                      <p className="text-xs text-gray-400">Earnings</p>
+                      <p className="text-sm font-bold text-gray-900">{formatPrice((ds.total_earnings_cents as number) || 0)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Tips</p>
+                      <p className="text-sm font-bold text-green-600">{formatPrice((ds.total_tips_cents as number) || 0)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Avg Time</p>
+                      <p className="text-sm font-bold text-gray-900">{(ds.avg_delivery_mins as number) || '—'} min</p>
+                    </div>
+                    <svg className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </button>
+
+                {/* Expanded delivery history */}
+                {isExpanded && (
+                  <div className="border-t border-gray-100">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Order</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Customer</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Total</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Tip</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Status</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Time</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase px-5 py-2">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {deliveries.map((d) => (
+                          <tr key={d.assignment_id as string} className="hover:bg-gray-50/50">
+                            <td className="px-5 py-2 text-xs font-mono text-gray-500">{(d.order_id as string).slice(0, 8)}</td>
+                            <td className="px-5 py-2 text-xs text-gray-700">{d.customer_name as string}</td>
+                            <td className="px-5 py-2 text-xs font-semibold text-gray-900">{formatPrice((d.total_cents as number) || 0)}</td>
+                            <td className="px-5 py-2 text-xs font-semibold text-green-600">{(d.tip_cents as number) > 0 ? formatPrice(d.tip_cents as number) : '—'}</td>
+                            <td className="px-5 py-2">
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                (d.status as string) === 'delivered' ? 'bg-green-50 text-green-700' :
+                                (d.status as string) === 'assigned' ? 'bg-blue-50 text-blue-700' :
+                                'bg-gray-100 text-gray-500'
+                              }`}>{d.status as string}</span>
+                            </td>
+                            <td className="px-5 py-2 text-xs text-gray-500">{(d.delivery_mins as number) ? `${d.delivery_mins}m` : '—'}</td>
+                            <td className="px-5 py-2 text-xs text-gray-400">{d.assigned_at ? new Date(d.assigned_at as string).toLocaleDateString() : '—'}</td>
+                          </tr>
+                        ))}
+                        {deliveries.length === 0 && (
+                          <tr><td colSpan={7} className="px-5 py-4 text-center text-xs text-gray-400">No deliveries yet</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {view === 'settings' && (
         <div className="max-w-lg space-y-4">
           <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">

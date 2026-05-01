@@ -32,20 +32,10 @@ export default async function DeliveryStatusPage({
     );
   }
 
-  // Process status update if action provided
-  if (action === 'picked_up' && assignment.status === 'assigned') {
-    await supabase.from('driver_assignments')
-      .update({ status: 'picked_up', picked_up_at: new Date().toISOString() })
-      .eq('id', assignment.id);
-    await supabase.from('cart_orders')
-      .update({ delivery_status: 'picked_up' })
-      .eq('id', assignment.order_id);
-    redirect(`/delivery/${token}?updated=picked_up`);
-  }
-
-  if (action === 'delivered' && (assignment.status === 'picked_up' || assignment.status === 'en_route')) {
-    const deliveryMins = assignment.picked_up_at
-      ? Math.round((Date.now() - new Date(assignment.picked_up_at).getTime()) / 60000)
+  // Process "delivered" action — single step, no pickup needed
+  if (action === 'delivered' && assignment.status !== 'delivered') {
+    const deliveryMins = assignment.assigned_at
+      ? Math.round((Date.now() - new Date(assignment.assigned_at).getTime()) / 60000)
       : null;
     await supabase.from('driver_assignments')
       .update({ status: 'delivered', delivered_at: new Date().toISOString(), delivery_mins: deliveryMins })
@@ -53,8 +43,7 @@ export default async function DeliveryStatusPage({
     await supabase.from('cart_orders')
       .update({ delivery_status: 'delivered' })
       .eq('id', assignment.order_id);
-    // Update driver delivery count (best effort, no RPC needed)
-    redirect(`/delivery/${token}?updated=delivered`);
+    redirect(`/delivery/${token}?done=1`);
   }
 
   // Status page - no action needed, just display
@@ -111,18 +100,12 @@ export default async function DeliveryStatusPage({
               </div>
             )}
 
-            {/* Action buttons */}
+            {/* Action button — single "Mark as Delivered" */}
             <div className="space-y-2 pt-2">
-              {assignment.status === 'assigned' && (
-                <a href={`/delivery/${token}?action=picked_up`}
-                  className="block w-full text-center bg-amber-500 hover:bg-amber-600 text-white py-3.5 rounded-xl font-bold text-sm transition-colors">
-                  I Picked Up the Order
-                </a>
-              )}
-              {(assignment.status === 'picked_up' || assignment.status === 'en_route') && (
+              {assignment.status !== 'delivered' && (
                 <a href={`/delivery/${token}?action=delivered`}
-                  className="block w-full text-center bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-bold text-sm transition-colors">
-                  Order Delivered
+                  className="block w-full text-center bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-base transition-colors shadow-lg">
+                  Mark as Delivered
                 </a>
               )}
               {assignment.status === 'delivered' && (
@@ -134,6 +117,9 @@ export default async function DeliveryStatusPage({
                   </div>
                   <p className="text-sm font-semibold text-green-700">Delivery Complete!</p>
                   <p className="text-xs text-gray-400 mt-1">Thank you for the delivery.</p>
+                  {assignment.delivery_mins && (
+                    <p className="text-xs text-gray-500 mt-2">Delivered in {assignment.delivery_mins} minutes</p>
+                  )}
                 </div>
               )}
             </div>
