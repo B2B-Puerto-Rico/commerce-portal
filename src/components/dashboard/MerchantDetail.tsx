@@ -231,15 +231,15 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
     setSyncing(false);
   };
 
-  const tabs: { id: Tab; label: string; count?: number }[] = [
+  const tabs: { id: Tab; label: string; count?: number; desktopOnly?: boolean }[] = [
     { id: 'overview', label: 'Overview' },
-    { id: 'connect', label: 'Connect Clover' },
-    { id: 'connect-valor', label: 'Connect Valor' },
+    { id: 'connect', label: 'Connect Clover', desktopOnly: true },
+    { id: 'connect-valor', label: 'Connect Valor', desktopOnly: true },
     { id: 'products', label: 'Products', count: products.length },
-    { id: 'menu', label: 'Menu Builder' },
+    { id: 'menu', label: 'Menu Builder', desktopOnly: true },
     { id: 'orders', label: 'Orders', count: orders.length },
-    { id: 'drivers', label: 'Delivery' },
-    { id: 'sync', label: 'Sync History', count: syncRuns.length },
+    { id: 'drivers', label: 'Delivery', desktopOnly: true },
+    { id: 'sync', label: 'Sync History', count: syncRuns.length, desktopOnly: true },
     { id: 'settings', label: 'Settings' },
   ];
 
@@ -302,7 +302,8 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap ${
-              tab === t.id
+              t.desktopOnly ? 'hidden md:block' : ''
+            } ${tab === t.id
                 ? 'border-cobalt text-cobalt'
                 : 'border-transparent text-gray-400 hover:text-glass-secondary'
             }`}

@@ -57,7 +57,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@b2bpr.ai"
-                className="w-full border border-glass-border rounded-[10px] px-4 py-3 text-sm text-glass-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cobalt/30 focus:border-cobalt transition-all"
+                className="w-full border border-glass-border rounded-[10px] px-4 py-3 text-base md:text-sm text-glass-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cobalt/30 focus:border-cobalt transition-all"
               />
             </div>
 
@@ -72,7 +72,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-full border border-glass-border rounded-[10px] px-4 py-3 text-sm text-glass-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cobalt/30 focus:border-cobalt transition-all"
+                className="w-full border border-glass-border rounded-[10px] px-4 py-3 text-base md:text-sm text-glass-primary placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cobalt/30 focus:border-cobalt transition-all"
               />
             </div>
 
