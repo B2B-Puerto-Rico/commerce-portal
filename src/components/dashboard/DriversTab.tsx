@@ -48,14 +48,16 @@ export function DriversTab({ mid }: { mid: string }) {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'drivers' | 'zones' | 'settings'>('drivers');
 
-  // Add driver form
+  // Add/Edit driver form
   const [showAddDriver, setShowAddDriver] = useState(false);
+  const [editingDriverId, setEditingDriverId] = useState<string | null>(null);
   const [driverForm, setDriverForm] = useState({ full_name: '', email: '', phone: '', pay_type: 'per_delivery', pay_rate: '', zone_ids: [] as string[] });
   const [addingDriver, setAddingDriver] = useState(false);
   const [addDriverMsg, setAddDriverMsg] = useState('');
 
-  // Add zone form
+  // Add/Edit zone form
   const [showAddZone, setShowAddZone] = useState(false);
+  const [editingZoneId, setEditingZoneId] = useState<string | null>(null);
   const [zoneForm, setZoneForm] = useState({ name: '', zip_codes: '', color: '#3B82F6' });
   const [addingZone, setAddingZone] = useState(false);
 
@@ -96,6 +98,18 @@ export function DriversTab({ mid }: { mid: string }) {
     setLoading(false);
   }
 
+  function startEditDriver(driver: Driver) {
+    setEditingDriverId(driver.id);
+    setDriverForm({ full_name: driver.full_name, email: driver.email, phone: driver.phone, pay_type: driver.pay_type, pay_rate: (driver.pay_rate_cents / 100).toFixed(2), zone_ids: driver.zone_ids });
+    setShowAddDriver(true);
+  }
+
+  function startEditZone(zone: Zone) {
+    setEditingZoneId(zone.id);
+    setZoneForm({ name: zone.name, zip_codes: zone.zip_codes.join(', '), color: zone.color });
+    setShowAddZone(true);
+  }
+
   async function handleAddDriver(e: React.FormEvent) {
     e.preventDefault();
     setAddingDriver(true);
@@ -105,6 +119,7 @@ export function DriversTab({ mid }: { mid: string }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         mid,
+        id: editingDriverId || undefined,
         full_name: driverForm.full_name,
         email: driverForm.email,
         phone: driverForm.phone,
@@ -115,8 +130,9 @@ export function DriversTab({ mid }: { mid: string }) {
     });
     const data = await res.json();
     if (res.ok) {
-      setAddDriverMsg('Driver added! Verification email sent.');
+      setAddDriverMsg(editingDriverId ? 'Driver updated!' : 'Driver added! Verification email sent.');
       setDriverForm({ full_name: '', email: '', phone: '', pay_type: 'per_delivery', pay_rate: '', zone_ids: [] });
+      setEditingDriverId(null);
       setShowAddDriver(false);
       loadAll();
     } else {
@@ -133,12 +149,14 @@ export function DriversTab({ mid }: { mid: string }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         mid,
+        id: editingZoneId || undefined,
         name: zoneForm.name,
         zip_codes: zoneForm.zip_codes.split(',').map((z) => z.trim()).filter(Boolean),
         color: zoneForm.color,
       }),
     });
     setZoneForm({ name: '', zip_codes: '', color: '#3B82F6' });
+    setEditingZoneId(null);
     setShowAddZone(false);
     loadAll();
     setAddingZone(false);
@@ -213,7 +231,7 @@ export function DriversTab({ mid }: { mid: string }) {
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm text-gray-900">Delivery Drivers</h3>
             <button
-              onClick={() => setShowAddDriver(!showAddDriver)}
+              onClick={() => { setEditingDriverId(null); setDriverForm({ full_name: '', email: '', phone: '', pay_type: 'per_delivery', pay_rate: '', zone_ids: [] }); setShowAddDriver(!showAddDriver); }}
               className="bg-gray-900 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-gray-800 active:scale-[0.98] transition-all"
             >
               + Add Driver
@@ -229,7 +247,7 @@ export function DriversTab({ mid }: { mid: string }) {
           {/* Add driver form */}
           {showAddDriver && (
             <form onSubmit={handleAddDriver} className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-              <h4 className="font-semibold text-sm text-gray-900">New Driver</h4>
+              <h4 className="font-semibold text-sm text-gray-900">{editingDriverId ? 'Edit Driver' : 'New Driver'}</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Full Name *</label>
@@ -285,7 +303,7 @@ export function DriversTab({ mid }: { mid: string }) {
               <div className="flex gap-3">
                 <button type="submit" disabled={addingDriver}
                   className="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-gray-800 disabled:bg-gray-300">
-                  {addingDriver ? 'Adding...' : 'Add Driver & Send Invite'}
+                  {addingDriver ? 'Saving...' : editingDriverId ? 'Update Driver' : 'Add Driver & Send Invite'}
                 </button>
                 <button type="button" onClick={() => setShowAddDriver(false)}
                   className="text-xs text-gray-400 hover:text-gray-600 px-3">Cancel</button>
@@ -334,6 +352,8 @@ export function DriversTab({ mid }: { mid: string }) {
                       </div>
                       {/* Actions */}
                       <div className="flex items-center gap-1">
+                        <button onClick={() => startEditDriver(driver)}
+                          className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">Edit</button>
                         <button onClick={() => handleToggleDriverStatus(driver)}
                           className={`text-[10px] font-semibold px-2 py-1 rounded-lg ${
                             driver.status === 'active' ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100'
@@ -406,7 +426,10 @@ export function DriversTab({ mid }: { mid: string }) {
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: zone.color }} />
                       <span className="text-sm font-bold text-gray-900">{zone.name}</span>
                     </div>
-                    <button onClick={() => handleDeleteZone(zone.id)} className="text-xs text-red-400 hover:text-red-600">Delete</button>
+                    <div className="flex gap-2">
+                      <button onClick={() => startEditZone(zone)} className="text-xs text-blue-500 hover:text-blue-700 font-medium">Edit</button>
+                      <button onClick={() => handleDeleteZone(zone.id)} className="text-xs text-red-400 hover:text-red-600">Delete</button>
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-1 mb-2">
                     {zone.zip_codes.map((zip) => (
