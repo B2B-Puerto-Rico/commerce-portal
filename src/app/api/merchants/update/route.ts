@@ -14,6 +14,7 @@ export async function POST(request: Request) {
   const allowed = [
     'business_name', 'site_url', 'github_repo', 'cart_tier',
     'cart_enabled', 'theme', 'shipping_config', 'tax_config',
+    'dual_pricing_enabled', 'card_surcharge_pct', 'allow_cash_on_fulfillment', 'dual_pricing_label',
   ];
   const safeUpdates: Record<string, unknown> = {};
   for (const key of allowed) {

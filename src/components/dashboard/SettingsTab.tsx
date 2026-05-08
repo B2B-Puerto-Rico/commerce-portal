@@ -32,6 +32,11 @@ export function SettingsTab({
   const [tier, setTier] = useState((m.cart_tier as string) || 'free');
   const [pizzeriaMode, setPizzeriaMode] = useState((theme as Record<string, unknown>).pizzeria_mode === true);
   const [pizzaCategoryName, setPizzaCategoryName] = useState(((theme as Record<string, unknown>).pizza_category_name as string) || 'Pizzas');
+  // Dual pricing
+  const [dualPricingEnabled, setDualPricingEnabled] = useState((m.dual_pricing_enabled as boolean) || false);
+  const [cardSurchargePct, setCardSurchargePct] = useState(String((m.card_surcharge_pct as number) || ''));
+  const [allowCashOnFulfillment, setAllowCashOnFulfillment] = useState((m.allow_cash_on_fulfillment as boolean) !== false);
+  const [dualPricingLabel, setDualPricingLabel] = useState((m.dual_pricing_label as string) || 'Card Service Fee');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deploying, setDeploying] = useState(false);
@@ -49,6 +54,10 @@ export function SettingsTab({
         site_url: siteUrl || null,
         github_repo: githubRepo || null,
         cart_tier: tier,
+        dual_pricing_enabled: dualPricingEnabled,
+        card_surcharge_pct: dualPricingEnabled ? parseFloat(cardSurchargePct) || null : null,
+        allow_cash_on_fulfillment: allowCashOnFulfillment,
+        dual_pricing_label: dualPricingLabel || 'Card Service Fee',
         theme: {
           primaryColor,
           buttonText,
@@ -354,6 +363,83 @@ export function SettingsTab({
                     placeholder="Pizzas"
                     className="w-48 border border-orange-200 rounded-[10px] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400/30 focus:border-orange-400 transition-all" />
                   <p className="text-xs text-glass-secondary mt-1.5">Products in this category will open the pizza builder.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Dual Pricing */}
+          <div className={`rounded-2xl border-2 overflow-hidden transition-all ${
+            dualPricingEnabled ? 'border-cobalt/30 bg-cobalt-50/20' : 'border-glass-border bg-glass-surface'
+          }`}>
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
+                    dualPricingEnabled ? 'bg-cobalt-50' : 'bg-glass-neutral'
+                  }`}>
+                    💳
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-glass-primary">Dual Pricing</h3>
+                    <p className="text-xs text-glass-secondary mt-0.5">Cash discount / card surcharge model</p>
+                  </div>
+                </div>
+                <button onClick={() => setDualPricingEnabled(!dualPricingEnabled)}
+                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+                    dualPricingEnabled ? 'bg-cobalt' : 'bg-gray-300'
+                  }`}>
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                    dualPricingEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+              {dualPricingEnabled && (
+                <div className="mt-5 pt-5 border-t border-cobalt/10 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-glass-secondary mb-1.5">Card Surcharge %</label>
+                      <input type="number" step="0.01" min="0.01" max="19.99" value={cardSurchargePct}
+                        onChange={(e) => setCardSurchargePct(e.target.value)}
+                        placeholder="3.99"
+                        className="w-full border border-glass-border rounded-[10px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt/30 focus:border-cobalt transition-all" />
+                      <p className="text-[10px] text-glass-secondary mt-1">e.g., 3.99% → $100 cash = $103.99 card</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-glass-secondary mb-1.5">Fee Label</label>
+                      <input type="text" value={dualPricingLabel}
+                        onChange={(e) => setDualPricingLabel(e.target.value)}
+                        placeholder="Card Service Fee"
+                        className="w-full border border-glass-border rounded-[10px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt/30 focus:border-cobalt transition-all" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-glass-neutral rounded-[10px]">
+                    <div>
+                      <span className="text-sm font-medium text-glass-primary">Allow cash on pickup/delivery</span>
+                      <p className="text-[10px] text-glass-secondary mt-0.5">Customers can choose to pay cash at the counter</p>
+                    </div>
+                    <button onClick={() => setAllowCashOnFulfillment(!allowCashOnFulfillment)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        allowCashOnFulfillment ? 'bg-green-500' : 'bg-gray-300'
+                      }`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        allowCashOnFulfillment ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                    </button>
+                  </div>
+                  {/* Live preview */}
+                  {cardSurchargePct && parseFloat(cardSurchargePct) > 0 && (
+                    <div className="bg-glass-surface border border-glass-border rounded-[10px] p-4">
+                      <p className="text-[10px] font-bold text-glass-secondary uppercase tracking-widest mb-2">Preview</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-bold text-glass-primary">$10.00 <span className="text-xs font-normal text-glass-secondary">cash</span></p>
+                          <p className="text-sm font-bold text-cobalt">${(10 * (1 + parseFloat(cardSurchargePct) / 100)).toFixed(2)} <span className="text-xs font-normal">with card</span></p>
+                        </div>
+                        <span className="text-[10px] text-glass-secondary bg-glass-neutral px-2 py-1 rounded-full">{dualPricingLabel} ({cardSurchargePct}%)</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
