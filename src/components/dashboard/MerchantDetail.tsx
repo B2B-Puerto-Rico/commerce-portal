@@ -6,6 +6,7 @@ import { SettingsTab } from './SettingsTab';
 import { ProductsTab } from './ProductsTab';
 import { MenuBuilder } from './MenuBuilder';
 import { DriversTab } from './DriversTab';
+import { InvoicesTab } from './InvoicesTab';
 
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -25,10 +26,10 @@ interface Props {
   modifiers: Record<string, unknown>[];
 }
 
-type Tab = 'overview' | 'connect' | 'connect-valor' | 'products' | 'menu' | 'orders' | 'drivers' | 'sync' | 'settings';
+type Tab = 'overview' | 'connect' | 'connect-valor' | 'products' | 'menu' | 'orders' | 'invoices' | 'drivers' | 'sync' | 'settings';
 
 export function MerchantDetail({ merchant, products, orders, syncRuns, categories, modifierGroups, modifiers }: Props) {
-  const validTabs: Tab[] = ['overview', 'connect', 'connect-valor', 'products', 'menu', 'orders', 'drivers', 'sync', 'settings'];
+  const validTabs: Tab[] = ['overview', 'connect', 'connect-valor', 'products', 'menu', 'orders', 'invoices', 'drivers', 'sync', 'settings'];
   const initialTab = (() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.replace('#', '') as Tab;
@@ -238,6 +239,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
     { id: 'products', label: 'Products', count: products.length },
     { id: 'menu', label: 'Menu Builder', desktopOnly: true },
     { id: 'orders', label: 'Orders', count: orders.length },
+    { id: 'invoices', label: 'Invoices' },
     { id: 'drivers', label: 'Delivery', desktopOnly: true },
     { id: 'sync', label: 'Sync History', count: syncRuns.length, desktopOnly: true },
     { id: 'settings', label: 'Settings' },
@@ -810,6 +812,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                 <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Order</th>
                 <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Customer</th>
                 <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Total</th>
+                <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Payment</th>
                 <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Status</th>
                 <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Tip</th>
                 <th className="text-left text-xs font-semibold text-glass-secondary uppercase tracking-wider px-5 py-3">Delivery</th>
@@ -818,7 +821,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
             </thead>
             <tbody className="divide-y divide-glass-border">
               {orders.length === 0 ? (
-                <tr><td colSpan={5} className="px-5 py-12 text-center text-sm text-gray-400">No orders yet</td></tr>
+                <tr><td colSpan={8} className="px-5 py-12 text-center text-sm text-gray-400">No orders yet</td></tr>
               ) : orders.map((o) => (
                 <tr key={o.id as string} className="hover:bg-glass-neutral/50">
                   <td className="px-5 py-3">
@@ -857,10 +860,30 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
                     <span className="text-sm font-medium text-glass-primary">{o.customer_name as string}</span>
                     <span className="block text-xs text-gray-400">{o.customer_email as string}</span>
                   </td>
-                  <td className="px-5 py-3 text-sm font-semibold text-glass-primary">{formatPrice(o.total_cents as number)}</td>
+                  <td className="px-5 py-3">
+                    <span className="text-sm font-semibold text-glass-primary">{formatPrice(o.total_cents as number)}</span>
+                    {(o.cash_total_cents as number) > 0 && (o.card_total_cents as number) > 0 && (o.cash_total_cents as number) !== (o.card_total_cents as number) && (
+                      <span className="block text-[10px] text-gray-400">
+                        Cash {formatPrice(o.cash_total_cents as number)} / Card {formatPrice(o.card_total_cents as number)}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-5 py-3">
+                    {(o.payment_method as string) === 'cash' ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        Cash — collect at {(o.fulfillment_type as string) || 'pickup'}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-blue-50 text-blue-600">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                        Card
+                      </span>
+                    )}
+                  </td>
                   <td className="px-5 py-3">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColor(o.status as string)}`}>
-                      {o.status as string}
+                      {(o.payment_status as string) === 'pending_cash' ? 'Awaiting Cash' : o.status as string}
                     </span>
                     {(o.status as string) === 'pending' && (o.payment_provider as string) === 'valor' && (
                       <button
@@ -946,6 +969,18 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
           </table>
         </div>
         </div>
+      )}
+
+      {/* ================================================================= */}
+      {/* Invoices tab */}
+      {/* ================================================================= */}
+      {tab === 'invoices' && (
+        <InvoicesTab
+          mid={m.mid as string}
+          company={(m.company as string) || 'b2b'}
+          merchantName={m.business_name as string}
+          orders={orders}
+        />
       )}
 
       {/* ================================================================= */}
