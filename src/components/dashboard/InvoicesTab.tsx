@@ -86,6 +86,45 @@ export function InvoicesTab({
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sendFeedback, setSendFeedback] = useState<{ id: string; kind: 'success' | 'error'; text: string } | null>(null);
 
+  // Mark Paid: which row's picker is open, picker form state, and busy state
+  const [markPaidOpenId, setMarkPaidOpenId] = useState<string | null>(null);
+  const [markPaidMethod, setMarkPaidMethod] = useState<'cash' | 'check' | 'transfer' | 'card' | 'other'>('cash');
+  const [markPaidReference, setMarkPaidReference] = useState('');
+  const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
+
+  const markInvoicePaid = async (invoiceId: string) => {
+    setMarkingPaidId(invoiceId);
+    setSendFeedback(null);
+    try {
+      const res = await fetch(`/api/merchants/invoices/${invoiceId}/mark-paid`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_method: markPaidMethod,
+          payment_reference: markPaidReference,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setSendFeedback({ id: invoiceId, kind: 'success', text: 'Marked paid.' });
+        setMarkPaidOpenId(null);
+        setMarkPaidReference('');
+        setMarkPaidMethod('cash');
+        await fetchInvoices();
+      } else {
+        setSendFeedback({ id: invoiceId, kind: 'error', text: data?.error || 'Failed to mark paid.' });
+      }
+    } catch (e) {
+      setSendFeedback({
+        id: invoiceId,
+        kind: 'error',
+        text: e instanceof Error ? e.message : 'Network error',
+      });
+    } finally {
+      setMarkingPaidId(null);
+    }
+  };
+
   // Convert decimal-dollar input to integer cents at the boundary.
   // Empty / invalid → 0 cents so the running total is always defined.
   function priceToCents(price: string): number {
@@ -385,10 +424,10 @@ export function InvoicesTab({
                 <td className="px-5 py-3 text-xs text-gray-400">{formatDate(inv.created_at)}</td>
                 <td className="px-5 py-3">
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <button onClick={() => viewInvoice(inv)} className="text-xs text-cobalt hover:underline font-medium">View</button>
                       <button onClick={() => downloadPdf(inv.id)} className="text-xs text-gray-500 hover:text-gray-700 font-medium">PDF</button>
-                      {inv.customer_email && inv.status !== 'paid' && (
+                      {inv.customer_email && inv.status !== 'paid' && inv.status !== 'cancelled' && (
                         <button
                           onClick={() => sendInvoice(inv.id)}
                           disabled={sendingId === inv.id}
@@ -402,7 +441,69 @@ export function InvoicesTab({
                           {sendingId === inv.id ? 'Sending…' : inv.status === 'draft' ? 'Send' : 'Resend'}
                         </button>
                       )}
+                      {inv.status !== 'paid' && inv.status !== 'cancelled' && (
+                        <button
+                          onClick={() => {
+                            setMarkPaidOpenId(markPaidOpenId === inv.id ? null : inv.id);
+                            setMarkPaidMethod('cash');
+                            setMarkPaidReference('');
+                          }}
+                          className="text-xs text-emerald-700 hover:underline font-medium"
+                        >
+                          Mark paid
+                        </button>
+                      )}
                     </div>
+
+                    {markPaidOpenId === inv.id && (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mt-1.5 space-y-2">
+                        <p className="text-[11px] font-semibold text-emerald-900 uppercase tracking-wider">How was it paid?</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(['cash', 'check', 'transfer', 'card', 'other'] as const).map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              onClick={() => setMarkPaidMethod(m)}
+                              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${
+                                markPaidMethod === m
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                              }`}
+                            >
+                              {m === 'cash' ? 'Cash' :
+                                m === 'check' ? 'Check' :
+                                m === 'transfer' ? 'Transfer' :
+                                m === 'card' ? 'Card (manual)' : 'Other'}
+                            </button>
+                          ))}
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Reference (optional) — check #, last 4, txn ID…"
+                          value={markPaidReference}
+                          onChange={(e) => setMarkPaidReference(e.target.value)}
+                          className="w-full border border-emerald-200 rounded-md px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        />
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => markInvoicePaid(inv.id)}
+                            disabled={markingPaidId === inv.id}
+                            className="px-3 py-1.5 rounded-md bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-60 transition-colors"
+                          >
+                            {markingPaidId === inv.id ? 'Saving…' : 'Confirm payment'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMarkPaidOpenId(null)}
+                            className="px-2 py-1.5 text-xs text-emerald-800 hover:text-emerald-900 font-medium"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {sendFeedback?.id === inv.id && (
                       <span className={`text-[11px] font-medium ${
                         sendFeedback.kind === 'success' ? 'text-green-600' : 'text-red-600'
