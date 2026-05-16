@@ -110,6 +110,25 @@ export async function POST(
     ? `<div style="background: #f8f9ff; border-left: 3px solid #2563eb; padding: 14px 16px; margin: 16px 0; border-radius: 4px; font-size: 14px; color: #333; line-height: 1.55; white-space: pre-wrap;">${escapeHtml(bodyMessage)}</div>`
     : '';
 
+  // Pay-online CTA — only for unpaid invoices that have a public_token. The
+  // token is set on creation but legacy invoices created before the migration
+  // may be null; gracefully omit the button in that case so the email is
+  // still useful (PDF attached, totals visible).
+  const publicToken = (inv.public_token as string | null) || null;
+  const cartUrl = (process.env.NEXT_PUBLIC_CART_URL || 'https://commerce.b2bweb.app').replace(/\/$/, '');
+  const isPayable = (inv.status as string) !== 'paid' && (inv.status as string) !== 'cancelled';
+  const payButtonHtml =
+    isPayable && publicToken
+      ? `
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${cartUrl}/i/${encodeURIComponent(publicToken)}"
+             style="display: inline-block; background: #2563eb; color: #ffffff; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; letter-spacing: 0.2px;">
+            ${escapeHtml(t.payThisInvoice)} — ${formatPrice(inv.total_cents as number)}
+          </a>
+          <p style="color: #888; font-size: 12px; margin-top: 8px;">${escapeHtml(t.payOnlineSecure)}</p>
+        </div>`
+      : '';
+
   const htmlBody = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #1a1a1a;">${t.invoice} ${inv.invoice_number}</h2>
@@ -121,6 +140,7 @@ export async function POST(
         <tr><td style="color: #888; font-size: 12px;">${t.status}</td><td style="text-align: right;">${t[(inv.status as string) as keyof typeof t] || inv.status}</td></tr>
         ${inv.due_date ? `<tr><td style="color: #888; font-size: 12px;">${t.dueDate}</td><td style="text-align: right;">${inv.due_date}</td></tr>` : ''}
       </table>
+      ${payButtonHtml}
       ${inv.notes ? `<p style="background: #f9fafb; padding: 12px; border-radius: 6px; font-size: 13px; color: #555;">${escapeHtml(inv.notes as string)}</p>` : ''}
       <p style="color: #aaa; font-size: 12px; text-align: center; margin-top: 24px;">${t.thankYou}</p>
     </div>
