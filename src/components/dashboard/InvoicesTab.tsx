@@ -19,6 +19,17 @@ interface Invoice {
   order_id: string | null;
 }
 
+interface ManualLineItem {
+  name: string;
+  quantity: number;
+  /** Decimal dollars in the form input; converted to cents on submit. */
+  price: string;
+}
+
+function newLineItem(): ManualLineItem {
+  return { name: '', quantity: 1, price: '' };
+}
+
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
@@ -40,11 +51,13 @@ export function InvoicesTab({
   company,
   merchantName,
   orders,
+  products = [],
 }: {
   mid: string;
   company: string;
   merchantName: string;
   orders: Record<string, unknown>[];
+  products?: Record<string, unknown>[];
 }) {
   const supabase = createClient();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -58,6 +71,60 @@ export function InvoicesTab({
     customerEmail: '',
     notes: '',
     dueDate: '',
+  });
+  const [manualLineItems, setManualLineItems] = useState<ManualLineItem[]>([newLineItem()]);
+  const [productPickerOpen, setProductPickerOpen] = useState(false);
+  const [productSearch, setProductSearch] = useState('');
+
+  // Convert decimal-dollar input to integer cents at the boundary.
+  // Empty / invalid → 0 cents so the running total is always defined.
+  function priceToCents(price: string): number {
+    const n = Number.parseFloat(price);
+    if (!Number.isFinite(n) || n < 0) return 0;
+    return Math.round(n * 100);
+  }
+
+  const manualSubtotalCents = manualLineItems.reduce(
+    (sum, li) => sum + priceToCents(li.price) * (Number(li.quantity) || 0),
+    0,
+  );
+
+  function updateLineItem(idx: number, patch: Partial<ManualLineItem>) {
+    setManualLineItems((prev) =>
+      prev.map((li, i) => (i === idx ? { ...li, ...patch } : li)),
+    );
+  }
+
+  function removeLineItem(idx: number) {
+    setManualLineItems((prev) =>
+      prev.length === 1 ? [newLineItem()] : prev.filter((_, i) => i !== idx),
+    );
+  }
+
+  function addProductFromCatalog(p: Record<string, unknown>) {
+    const name = (p.name as string) || 'Item';
+    const priceCents = Number(p.price_cents) || 0;
+    setManualLineItems((prev) => {
+      // Replace the first blank row, otherwise append.
+      const blankIdx = prev.findIndex((li) => !li.name && !li.price);
+      const row: ManualLineItem = {
+        name,
+        quantity: 1,
+        price: (priceCents / 100).toFixed(2),
+      };
+      if (blankIdx >= 0) {
+        return prev.map((li, i) => (i === blankIdx ? row : li));
+      }
+      return [...prev, row];
+    });
+    setProductPickerOpen(false);
+    setProductSearch('');
+  }
+
+  const filteredProducts = products.filter((p) => {
+    if (!productSearch.trim()) return true;
+    const q = productSearch.toLowerCase();
+    return ((p.name as string) || '').toLowerCase().includes(q);
   });
 
   const fetchInvoices = useCallback(async () => {
@@ -96,6 +163,17 @@ export function InvoicesTab({
   const createManual = async () => {
     setCreating(true);
     try {
+      // Strip blank rows (an empty row exists as a placeholder); the API computes
+      // subtotal/total from these line_items so it must match exactly what the
+      // form displayed.
+      const lineItemsPayload = manualLineItems
+        .filter((li) => li.name.trim() && priceToCents(li.price) > 0 && Number(li.quantity) > 0)
+        .map((li) => ({
+          name: li.name.trim(),
+          quantity: Number(li.quantity),
+          price_cents: priceToCents(li.price),
+        }));
+
       const res = await fetch('/api/merchants/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -105,12 +183,13 @@ export function InvoicesTab({
           customer_email: manualForm.customerEmail,
           notes: manualForm.notes,
           due_date: manualForm.dueDate || null,
-          line_items: [],
+          line_items: lineItemsPayload,
         }),
       });
       if (res.ok) {
         setShowCreateModal(false);
         setManualForm({ customerName: '', customerEmail: '', notes: '', dueDate: '' });
+        setManualLineItems([newLineItem()]);
         await fetchInvoices();
       }
     } finally {
@@ -312,6 +391,102 @@ export function InvoicesTab({
                   onChange={(e) => setManualForm({ ...manualForm, dueDate: e.target.value })}
                   className="w-full border border-glass-border rounded-[10px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt/30"
                 />
+
+                {/* Line items editor */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-glass-secondary uppercase tracking-wider">Line items</label>
+                    {products.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setProductPickerOpen((v) => !v)}
+                        className="text-xs font-medium text-cobalt hover:underline"
+                      >
+                        {productPickerOpen ? 'Hide catalog' : '+ From catalog'}
+                      </button>
+                    )}
+                  </div>
+
+                  {productPickerOpen && (
+                    <div className="border border-glass-border rounded-[10px] p-2 max-h-48 overflow-y-auto space-y-1 bg-gray-50">
+                      <input
+                        type="text"
+                        placeholder="Search products..."
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                        className="w-full border border-glass-border rounded-md px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-cobalt/30"
+                      />
+                      {filteredProducts.length === 0 ? (
+                        <p className="text-xs text-gray-400 text-center py-3">No matching products</p>
+                      ) : (
+                        filteredProducts.slice(0, 30).map((p) => (
+                          <button
+                            type="button"
+                            key={p.clover_item_id as string}
+                            onClick={() => addProductFromCatalog(p)}
+                            className="w-full flex items-center justify-between px-2 py-1.5 text-xs text-left rounded hover:bg-cobalt-50"
+                          >
+                            <span className="text-glass-primary truncate pr-2">{p.name as string}</span>
+                            <span className="text-glass-secondary flex-shrink-0">{formatPrice(Number(p.price_cents) || 0)}</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+
+                  {manualLineItems.map((li, idx) => (
+                    <div key={idx} className="flex items-start gap-1.5">
+                      <input
+                        type="text"
+                        placeholder="Description (e.g. Consultation)"
+                        value={li.name}
+                        onChange={(e) => updateLineItem(idx, { name: e.target.value })}
+                        className="flex-1 min-w-0 border border-glass-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt/30"
+                      />
+                      <input
+                        type="number"
+                        min={1}
+                        placeholder="Qty"
+                        value={li.quantity}
+                        onChange={(e) => updateLineItem(idx, { quantity: Math.max(1, Number(e.target.value) || 1) })}
+                        className="w-14 border border-glass-border rounded-[10px] px-2 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-cobalt/30"
+                      />
+                      <input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        placeholder="$"
+                        value={li.price}
+                        onChange={(e) => updateLineItem(idx, { price: e.target.value })}
+                        className="w-20 border border-glass-border rounded-[10px] px-2 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-cobalt/30"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeLineItem(idx)}
+                        aria-label="Remove line"
+                        className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-[10px] text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setManualLineItems((prev) => [...prev, newLineItem()])}
+                      className="text-xs font-medium text-cobalt hover:underline"
+                    >
+                      + Add line
+                    </button>
+                    <span className="text-sm font-semibold text-glass-primary">
+                      Subtotal: {formatPrice(manualSubtotalCents)}
+                    </span>
+                  </div>
+                </div>
+
                 <textarea
                   placeholder="Notes (optional)"
                   value={manualForm.notes}
@@ -321,10 +496,14 @@ export function InvoicesTab({
                 />
                 <button
                   onClick={createManual}
-                  disabled={creating || !manualForm.customerName}
+                  disabled={creating || !manualForm.customerName || manualSubtotalCents === 0}
                   className="w-full py-2.5 bg-glass-primary text-white text-sm font-medium rounded-[10px] hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 >
-                  {creating ? 'Creating...' : 'Create Draft Invoice'}
+                  {creating
+                    ? 'Creating...'
+                    : manualSubtotalCents === 0
+                      ? 'Add at least one line item'
+                      : `Create Draft Invoice — ${formatPrice(manualSubtotalCents)}`}
                 </button>
               </div>
             </div>
