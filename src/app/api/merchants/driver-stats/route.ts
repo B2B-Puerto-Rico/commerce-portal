@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 
+// Reads query params and a runtime-resolved Supabase client; can't be
+// statically prerendered.
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const supabase = createServiceClient();
   const { searchParams } = new URL(request.url);

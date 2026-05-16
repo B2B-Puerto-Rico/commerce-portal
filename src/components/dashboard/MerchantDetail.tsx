@@ -980,6 +980,7 @@ export function MerchantDetail({ merchant, products, orders, syncRuns, categorie
           company={(m.company as string) || 'b2b'}
           merchantName={m.business_name as string}
           orders={orders}
+          products={products}
         />
       )}
 
