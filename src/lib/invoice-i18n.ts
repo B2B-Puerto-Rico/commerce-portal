@@ -38,6 +38,8 @@ const strings = {
     cash: 'Cash',
     phone: 'Phone',
     email: 'Email',
+    payThisInvoice: 'Pay this invoice',
+    payOnlineSecure: 'Pay online — secure checkout',
   },
   es: {
     invoice: 'Factura',
@@ -74,6 +76,8 @@ const strings = {
     cash: 'Efectivo',
     phone: 'Teléfono',
     email: 'Correo',
+    payThisInvoice: 'Pagar esta factura',
+    payOnlineSecure: 'Pagar en línea — pago seguro',
   },
 };
 

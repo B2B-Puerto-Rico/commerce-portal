@@ -1,6 +1,16 @@
 import { NextResponse } from 'next/server';
+import { randomBytes } from 'crypto';
 import { createServiceClient } from '@/lib/supabase/server';
 import { langFromCompany } from '@/lib/invoice-i18n';
+
+/**
+ * 36-char hex token used in the customer-facing URL /i/{token}. 18 bytes of
+ * randomness = 144 bits entropy — unguessable without DB access, and short
+ * enough to fit in an email body or QR code without wrapping.
+ */
+function generatePublicToken(): string {
+  return randomBytes(18).toString('hex');
+}
 
 /** GET: List invoices for a merchant */
 export async function GET(request: Request) {
@@ -92,6 +102,7 @@ export async function POST(request: Request) {
         mid,
         order_id: body.order_id,
         invoice_number: invoiceNumber,
+        public_token: generatePublicToken(),
         status: (o.status as string) === 'paid' ? 'paid' : 'unpaid',
         customer_name: o.customer_name,
         customer_email: o.customer_email,
@@ -128,6 +139,7 @@ export async function POST(request: Request) {
     .insert({
       mid,
       invoice_number: invoiceNumber,
+      public_token: generatePublicToken(),
       status: 'draft',
       customer_name: body.customer_name || null,
       customer_email: body.customer_email || null,
