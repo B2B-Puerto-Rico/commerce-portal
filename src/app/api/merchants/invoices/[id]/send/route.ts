@@ -95,7 +95,10 @@ export async function POST(
     return NextResponse.json({ error: 'Email service not configured' }, { status: 500 });
   }
 
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'invoices@commerce.b2bweb.app';
+  // Use the verified b2bweb.app domain by default (commerce.b2bweb.app is a
+  // marketing host, not a verified Resend sender). Override per-environment
+  // with RESEND_FROM_EMAIL if you want a different inbox label.
+  const fromEmail = process.env.RESEND_FROM_EMAIL || 'B2B Commerce <orders@b2bweb.app>';
   const subject = `${t.invoice} ${inv.invoice_number} — ${businessName}`;
 
   // Personal message from the merchant — rendered above totals, escaped + line breaks preserved.
