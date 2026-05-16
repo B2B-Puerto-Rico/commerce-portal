@@ -2,16 +2,42 @@ import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { getInvoiceStrings, langFromCompany, type InvoiceLang } from '@/lib/invoice-i18n';
 
+// Reads runtime env (Supabase, Resend) so it can't be statically prerendered.
+export const dynamic = 'force-dynamic';
+
 function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+// Escape any user-supplied string before embedding in the email HTML body.
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = createServiceClient();
   const { id } = await params;
+
+  // Optional `{ message }` body — merchant's personal note appended above the
+  // totals table. Body is JSON but old callers (the list "Send" button) call
+  // this without a body, so unparseable JSON is treated as no-message.
+  let bodyMessage = '';
+  try {
+    const body = await request.json();
+    if (body && typeof body.message === 'string') {
+      bodyMessage = body.message.trim();
+    }
+  } catch {
+    // No body — that's fine.
+  }
 
   // Fetch invoice
   const { data: invoice } = await supabase
@@ -42,10 +68,13 @@ export async function POST(
   const t = getInvoiceStrings(lang);
   const businessName = merchant?.business_name || 'Store';
 
-  // Generate PDF first (call our own endpoint internally via fetch)
-  const origin = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
+  // Generate PDF first (call our own endpoint internally via fetch).
+  // Precedence: explicit NEXT_PUBLIC_APP_URL → Vercel-injected URL → localhost.
+  // The previous ternary returned `https://undefined` when NEXT_PUBLIC_APP_URL
+  // was set but VERCEL_URL wasn't.
+  const origin =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
   let pdfAttachment: { filename: string; content: string } | null = null;
   try {
@@ -66,20 +95,33 @@ export async function POST(
     return NextResponse.json({ error: 'Email service not configured' }, { status: 500 });
   }
 
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'invoices@commerce.b2bweb.app';
+  // Use the verified b2bweb.app domain — commerce.b2bweb.app is a marketing
+  // host and is NOT a verified Resend sender (Resend returns 403 "Domain not
+  // verified"). The env var RESEND_INVOICE_FROM overrides per-environment if
+  // you ever need a different inbox; the generic RESEND_FROM_EMAIL is
+  // intentionally ignored here because it's been set to the unverified
+  // commerce.b2bweb.app in some environments.
+  const fromEmail =
+    process.env.RESEND_INVOICE_FROM || 'B2B Commerce <invoice@b2bweb.app>';
   const subject = `${t.invoice} ${inv.invoice_number} — ${businessName}`;
+
+  // Personal message from the merchant — rendered above totals, escaped + line breaks preserved.
+  const personalMessageHtml = bodyMessage
+    ? `<div style="background: #f8f9ff; border-left: 3px solid #2563eb; padding: 14px 16px; margin: 16px 0; border-radius: 4px; font-size: 14px; color: #333; line-height: 1.55; white-space: pre-wrap;">${escapeHtml(bodyMessage)}</div>`
+    : '';
 
   const htmlBody = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #1a1a1a;">${t.invoice} ${inv.invoice_number}</h2>
-      <p>${businessName}</p>
+      <p>${escapeHtml(businessName)}</p>
       <hr style="border: none; border-top: 1px solid #eee;" />
+      ${personalMessageHtml}
       <table style="width: 100%; margin: 16px 0;">
         <tr><td style="color: #888; font-size: 12px;">${t.total}</td><td style="text-align: right; font-weight: bold; font-size: 18px;">${formatPrice(inv.total_cents as number)}</td></tr>
         <tr><td style="color: #888; font-size: 12px;">${t.status}</td><td style="text-align: right;">${t[(inv.status as string) as keyof typeof t] || inv.status}</td></tr>
         ${inv.due_date ? `<tr><td style="color: #888; font-size: 12px;">${t.dueDate}</td><td style="text-align: right;">${inv.due_date}</td></tr>` : ''}
       </table>
-      ${inv.notes ? `<p style="background: #f9fafb; padding: 12px; border-radius: 6px; font-size: 13px; color: #555;">${inv.notes}</p>` : ''}
+      ${inv.notes ? `<p style="background: #f9fafb; padding: 12px; border-radius: 6px; font-size: 13px; color: #555;">${escapeHtml(inv.notes as string)}</p>` : ''}
       <p style="color: #aaa; font-size: 12px; text-align: center; margin-top: 24px;">${t.thankYou}</p>
     </div>
   `;

@@ -26,7 +26,15 @@ export async function GET(request: Request) {
   return NextResponse.json(data);
 }
 
-/** POST: Create a new invoice (from order or manually) */
+/** POST: Create a new invoice (from order or manually).
+ *
+ * Optional body flags:
+ *   - send_now: boolean — fire-and-forget call to the [id]/send route after
+ *     creation. The send result is included in the response under `email_sent`
+ *     / `email_error`, so the UI can surface failures inline.
+ *   - email_message: string — personal note to render above the totals table
+ *     in the email body. Ignored when send_now is false.
+ */
 export async function POST(request: Request) {
   const supabase = createServiceClient();
 
@@ -41,6 +49,8 @@ export async function POST(request: Request) {
   if (!mid) {
     return NextResponse.json({ error: 'mid is required' }, { status: 400 });
   }
+  const sendNow = body.send_now === true;
+  const emailMessage = typeof body.email_message === 'string' ? body.email_message : '';
 
   // Get merchant for company tag (determines language)
   const { data: merchant } = await supabase
@@ -108,7 +118,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(invoice);
+    const sendResult = await maybeSendInvoice(invoice as Record<string, unknown>, sendNow, emailMessage, request);
+    return NextResponse.json({ ...invoice, ...sendResult });
   }
 
   // Manual invoice creation
@@ -138,5 +149,43 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(invoice);
+  const sendResult = await maybeSendInvoice(invoice as Record<string, unknown>, sendNow, emailMessage, request);
+  return NextResponse.json({ ...invoice, ...sendResult });
+}
+
+/**
+ * If the caller asked to send the invoice immediately and we have a customer
+ * email, POST to the [id]/send route on the same host. Failures are returned
+ * in the response payload so the UI can show "Invoice created but email
+ * failed" rather than rolling back the create.
+ */
+async function maybeSendInvoice(
+  invoice: Record<string, unknown>,
+  sendNow: boolean,
+  emailMessage: string,
+  request: Request,
+): Promise<{ email_sent?: true; email_error?: string }> {
+  if (!sendNow) return {};
+  if (!invoice.customer_email) {
+    return { email_error: 'No customer email — invoice created but not sent.' };
+  }
+
+  const origin =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    new URL(request.url).origin;
+
+  try {
+    const res = await fetch(`${origin}/api/merchants/invoices/${invoice.id}/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: emailMessage }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return { email_error: (data && data.error) || `Send failed (${res.status})` };
+    }
+    return { email_sent: true };
+  } catch (e) {
+    return { email_error: e instanceof Error ? e.message : 'Network error sending email' };
+  }
 }

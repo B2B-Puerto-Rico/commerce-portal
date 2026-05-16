@@ -76,6 +76,55 @@ export function InvoicesTab({
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [productSearch, setProductSearch] = useState('');
 
+  // Send-on-create state (shared between manual + from-order paths)
+  const [sendOnCreate, setSendOnCreate] = useState(true);
+  const [emailMessage, setEmailMessage] = useState('');
+  const [emailMessageOpen, setEmailMessageOpen] = useState(false);
+  const [createFeedback, setCreateFeedback] = useState<{ kind: 'success' | 'warn' | 'error'; text: string } | null>(null);
+
+  // Per-row send state for the existing "Send" action in the list
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [sendFeedback, setSendFeedback] = useState<{ id: string; kind: 'success' | 'error'; text: string } | null>(null);
+
+  // Mark Paid: which row's picker is open, picker form state, and busy state
+  const [markPaidOpenId, setMarkPaidOpenId] = useState<string | null>(null);
+  const [markPaidMethod, setMarkPaidMethod] = useState<'cash' | 'check' | 'transfer' | 'card' | 'other'>('cash');
+  const [markPaidReference, setMarkPaidReference] = useState('');
+  const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
+
+  const markInvoicePaid = async (invoiceId: string) => {
+    setMarkingPaidId(invoiceId);
+    setSendFeedback(null);
+    try {
+      const res = await fetch(`/api/merchants/invoices/${invoiceId}/mark-paid`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_method: markPaidMethod,
+          payment_reference: markPaidReference,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setSendFeedback({ id: invoiceId, kind: 'success', text: 'Marked paid.' });
+        setMarkPaidOpenId(null);
+        setMarkPaidReference('');
+        setMarkPaidMethod('cash');
+        await fetchInvoices();
+      } else {
+        setSendFeedback({ id: invoiceId, kind: 'error', text: data?.error || 'Failed to mark paid.' });
+      }
+    } catch (e) {
+      setSendFeedback({
+        id: invoiceId,
+        kind: 'error',
+        text: e instanceof Error ? e.message : 'Network error',
+      });
+    } finally {
+      setMarkingPaidId(null);
+    }
+  };
+
   // Convert decimal-dollar input to integer cents at the boundary.
   // Empty / invalid → 0 cents so the running total is always defined.
   function priceToCents(price: string): number {
@@ -144,17 +193,37 @@ export function InvoicesTab({
 
   const createFromOrder = async (orderId: string) => {
     setCreating(true);
+    setCreateFeedback(null);
     try {
       const res = await fetch('/api/merchants/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mid, order_id: orderId }),
+        body: JSON.stringify({
+          mid,
+          order_id: orderId,
+          send_now: sendOnCreate,
+          email_message: sendOnCreate ? emailMessage : '',
+        }),
       });
-      if (res.ok) {
-        setShowCreateModal(false);
-        setSelectedOrderId('');
-        await fetchInvoices();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCreateFeedback({ kind: 'error', text: data?.error || 'Failed to create invoice.' });
+        return;
       }
+      if (data?.email_error) {
+        // Created but email failed — keep modal open so user can retry or note it.
+        setCreateFeedback({ kind: 'warn', text: `Invoice created, but email failed: ${data.email_error}` });
+        await fetchInvoices();
+        return;
+      }
+      setShowCreateModal(false);
+      setSelectedOrderId('');
+      setEmailMessage('');
+      setEmailMessageOpen(false);
+      if (data?.email_sent) {
+        setSendFeedback({ id: String(data.id || ''), kind: 'success', text: 'Invoice created and emailed.' });
+      }
+      await fetchInvoices();
     } finally {
       setCreating(false);
     }
@@ -174,6 +243,9 @@ export function InvoicesTab({
           price_cents: priceToCents(li.price),
         }));
 
+      // Only send-on-create if we have a destination email; otherwise the
+      // server will error and we'd surface a confusing "no email" message.
+      const wantsSend = sendOnCreate && !!manualForm.customerEmail.trim();
       const res = await fetch('/api/merchants/invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -184,14 +256,29 @@ export function InvoicesTab({
           notes: manualForm.notes,
           due_date: manualForm.dueDate || null,
           line_items: lineItemsPayload,
+          send_now: wantsSend,
+          email_message: wantsSend ? emailMessage : '',
         }),
       });
-      if (res.ok) {
-        setShowCreateModal(false);
-        setManualForm({ customerName: '', customerEmail: '', notes: '', dueDate: '' });
-        setManualLineItems([newLineItem()]);
-        await fetchInvoices();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCreateFeedback({ kind: 'error', text: data?.error || 'Failed to create invoice.' });
+        return;
       }
+      if (data?.email_error) {
+        setCreateFeedback({ kind: 'warn', text: `Invoice created, but email failed: ${data.email_error}` });
+        await fetchInvoices();
+        return;
+      }
+      setShowCreateModal(false);
+      setManualForm({ customerName: '', customerEmail: '', notes: '', dueDate: '' });
+      setManualLineItems([newLineItem()]);
+      setEmailMessage('');
+      setEmailMessageOpen(false);
+      if (data?.email_sent) {
+        setSendFeedback({ id: String(data.id || ''), kind: 'success', text: 'Invoice created and emailed.' });
+      }
+      await fetchInvoices();
     } finally {
       setCreating(false);
     }
@@ -241,11 +328,42 @@ export function InvoicesTab({
   };
 
   const sendInvoice = async (invoiceId: string) => {
-    const res = await fetch(`/api/merchants/invoices/${invoiceId}/send`, { method: 'POST' });
-    if (res.ok) {
-      await fetchInvoices();
+    setSendingId(invoiceId);
+    setSendFeedback(null);
+    try {
+      const res = await fetch(`/api/merchants/invoices/${invoiceId}/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setSendFeedback({ id: invoiceId, kind: 'success', text: 'Email sent.' });
+        await fetchInvoices();
+      } else {
+        setSendFeedback({
+          id: invoiceId,
+          kind: 'error',
+          text: data?.error || 'Failed to send email.',
+        });
+      }
+    } catch (e) {
+      setSendFeedback({
+        id: invoiceId,
+        kind: 'error',
+        text: e instanceof Error ? e.message : 'Network error',
+      });
+    } finally {
+      setSendingId(null);
     }
   };
+
+  // Auto-dismiss feedback after 4 seconds so the row isn't permanently noisy.
+  useEffect(() => {
+    if (!sendFeedback) return;
+    const t = setTimeout(() => setSendFeedback(null), 4000);
+    return () => clearTimeout(t);
+  }, [sendFeedback]);
 
   // Orders that don't already have invoices
   const uninvoicedOrders = orders.filter(
@@ -305,11 +423,93 @@ export function InvoicesTab({
                 </td>
                 <td className="px-5 py-3 text-xs text-gray-400">{formatDate(inv.created_at)}</td>
                 <td className="px-5 py-3">
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => viewInvoice(inv)} className="text-xs text-cobalt hover:underline font-medium">View</button>
-                    <button onClick={() => downloadPdf(inv.id)} className="text-xs text-gray-500 hover:text-gray-700 font-medium">PDF</button>
-                    {inv.customer_email && inv.status !== 'paid' && (
-                      <button onClick={() => sendInvoice(inv.id)} className="text-xs text-green-600 hover:underline font-medium">Send</button>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button onClick={() => viewInvoice(inv)} className="text-xs text-cobalt hover:underline font-medium">View</button>
+                      <button onClick={() => downloadPdf(inv.id)} className="text-xs text-gray-500 hover:text-gray-700 font-medium">PDF</button>
+                      {inv.customer_email && inv.status !== 'paid' && inv.status !== 'cancelled' && (
+                        <button
+                          onClick={() => sendInvoice(inv.id)}
+                          disabled={sendingId === inv.id}
+                          className="inline-flex items-center gap-1 text-xs text-green-600 hover:underline font-medium disabled:opacity-60 disabled:cursor-wait"
+                        >
+                          {sendingId === inv.id && (
+                            <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none">
+                              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeDasharray="42" strokeDashoffset="20" />
+                            </svg>
+                          )}
+                          {sendingId === inv.id ? 'Sending…' : inv.status === 'draft' ? 'Send' : 'Resend'}
+                        </button>
+                      )}
+                      {inv.status !== 'paid' && inv.status !== 'cancelled' && (
+                        <button
+                          onClick={() => {
+                            setMarkPaidOpenId(markPaidOpenId === inv.id ? null : inv.id);
+                            setMarkPaidMethod('cash');
+                            setMarkPaidReference('');
+                          }}
+                          className="text-xs text-emerald-700 hover:underline font-medium"
+                        >
+                          Mark paid
+                        </button>
+                      )}
+                    </div>
+
+                    {markPaidOpenId === inv.id && (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mt-1.5 space-y-2">
+                        <p className="text-[11px] font-semibold text-emerald-900 uppercase tracking-wider">How was it paid?</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(['cash', 'check', 'transfer', 'card', 'other'] as const).map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              onClick={() => setMarkPaidMethod(m)}
+                              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${
+                                markPaidMethod === m
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                              }`}
+                            >
+                              {m === 'cash' ? 'Cash' :
+                                m === 'check' ? 'Check' :
+                                m === 'transfer' ? 'Transfer' :
+                                m === 'card' ? 'Card (manual)' : 'Other'}
+                            </button>
+                          ))}
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Reference (optional) — check #, last 4, txn ID…"
+                          value={markPaidReference}
+                          onChange={(e) => setMarkPaidReference(e.target.value)}
+                          className="w-full border border-emerald-200 rounded-md px-3 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                        />
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => markInvoicePaid(inv.id)}
+                            disabled={markingPaidId === inv.id}
+                            className="px-3 py-1.5 rounded-md bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-60 transition-colors"
+                          >
+                            {markingPaidId === inv.id ? 'Saving…' : 'Confirm payment'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMarkPaidOpenId(null)}
+                            className="px-2 py-1.5 text-xs text-emerald-800 hover:text-emerald-900 font-medium"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {sendFeedback?.id === inv.id && (
+                      <span className={`text-[11px] font-medium ${
+                        sendFeedback.kind === 'success' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {sendFeedback.text}
+                      </span>
                     )}
                   </div>
                 </td>
@@ -322,15 +522,25 @@ export function InvoicesTab({
       {/* Create Invoice Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-semibold text-lg text-glass-primary">New Invoice</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => { setShowCreateModal(false); setCreateFeedback(null); }} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
+
+            {createFeedback && (
+              <div className={`mx-6 mt-4 px-4 py-2.5 rounded-[10px] text-sm ${
+                createFeedback.kind === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
+                createFeedback.kind === 'warn' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+                {createFeedback.text}
+              </div>
+            )}
 
             <div className="p-6 space-y-6">
               {/* From Order */}
@@ -349,15 +559,22 @@ export function InvoicesTab({
                       </option>
                     ))}
                   </select>
-                  {selectedOrderId && (
-                    <button
-                      onClick={() => createFromOrder(selectedOrderId)}
-                      disabled={creating}
-                      className="w-full py-2.5 bg-cobalt text-white text-sm font-medium rounded-[10px] hover:bg-cobalt-600 disabled:opacity-50 transition-colors"
-                    >
-                      {creating ? 'Creating...' : 'Create Invoice from Order'}
-                    </button>
-                  )}
+                  {selectedOrderId && (() => {
+                    const order = uninvoicedOrders.find((o) => o.id === selectedOrderId);
+                    const orderHasEmail = !!(order?.customer_email as string);
+                    const willSend = sendOnCreate && orderHasEmail;
+                    return (
+                      <button
+                        onClick={() => createFromOrder(selectedOrderId)}
+                        disabled={creating}
+                        className="w-full py-2.5 bg-cobalt text-white text-sm font-medium rounded-[10px] hover:bg-cobalt-600 disabled:opacity-50 transition-colors"
+                      >
+                        {creating
+                          ? willSend ? 'Creating & sending…' : 'Creating…'
+                          : willSend ? 'Create & Email Invoice' : 'Create Invoice from Order'}
+                      </button>
+                    );
+                  })()}
                 </div>
               )}
 
@@ -499,12 +716,60 @@ export function InvoicesTab({
                   disabled={creating || !manualForm.customerName || manualSubtotalCents === 0}
                   className="w-full py-2.5 bg-glass-primary text-white text-sm font-medium rounded-[10px] hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 >
-                  {creating
-                    ? 'Creating...'
-                    : manualSubtotalCents === 0
-                      ? 'Add at least one line item'
-                      : `Create Draft Invoice — ${formatPrice(manualSubtotalCents)}`}
+                  {(() => {
+                    if (creating) {
+                      return sendOnCreate && manualForm.customerEmail
+                        ? 'Creating & sending…'
+                        : 'Creating…';
+                    }
+                    if (manualSubtotalCents === 0) return 'Add at least one line item';
+                    const verb = sendOnCreate && manualForm.customerEmail ? 'Create & Email' : 'Create Draft';
+                    return `${verb} Invoice — ${formatPrice(manualSubtotalCents)}`;
+                  })()}
                 </button>
+              </div>
+
+              {/* ============================================================ */}
+              {/* Shared: Send via email options (applies to both paths above) */}
+              {/* ============================================================ */}
+              <div className="border-t border-gray-100 pt-5 space-y-3">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sendOnCreate}
+                    onChange={(e) => setSendOnCreate(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-gray-300 text-cobalt focus:ring-cobalt/30"
+                  />
+                  <span className="text-sm text-glass-primary">
+                    Email the invoice to the customer immediately
+                    <span className="block text-xs text-glass-secondary mt-0.5">
+                      Uses the customer email on the invoice. Sends a PDF attached with totals.
+                      Won&apos;t send if no customer email is set.
+                    </span>
+                  </span>
+                </label>
+
+                {sendOnCreate && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setEmailMessageOpen((v) => !v)}
+                      className="text-xs font-medium text-cobalt hover:underline"
+                    >
+                      {emailMessageOpen ? '− Hide message' : '+ Add a personal message'}
+                    </button>
+                    {emailMessageOpen && (
+                      <textarea
+                        placeholder="Hi — thanks for your business. Here's the invoice for last week's work. Let me know if you have any questions."
+                        value={emailMessage}
+                        onChange={(e) => setEmailMessage(e.target.value)}
+                        rows={3}
+                        maxLength={1000}
+                        className="w-full border border-glass-border rounded-[10px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cobalt/30 resize-none"
+                      />
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
